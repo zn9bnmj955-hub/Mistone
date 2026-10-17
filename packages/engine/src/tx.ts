@@ -41,7 +41,11 @@ export class Transaction {
   readonly changes: Change[] = [];
   private copied = new Set<string>();
 
+  /** The state before this action (read only, never changed). */
+  readonly base: EngineState;
+
   constructor(base: EngineState) {
+    this.base = base;
     this.state = { ...base };
   }
 

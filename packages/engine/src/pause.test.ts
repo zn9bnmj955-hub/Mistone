@@ -215,14 +215,31 @@ describe("two-day pause — winner changed during the night (testeur)", () => {
     expect(next.every((x) => x.scheduledAt === null || x.scheduledAt === now)).toBe(true);
   });
 
-  // Écart relevé : pendant qu'un match du A est rouvert, pausedAt est null (le tour du A n'est plus complet),
-  // donc autoAdvance tire le tour suivant du B puis le 1er tour du C — la pause du soir est perdue pour eux.
-  it.fails("reopening a day-1 match of the A during the pause does not draw the B or the C", () => {
+  // Pendant qu'un match du A est rouvert, pausedAt est null (le tour du A n'est plus complet), mais la pause
+  // est « en attente » : le B et le C restent tenus jusqu'à la reprise.
+  it("reopening a day-1 match of the A during the pause does not draw the B or the C", () => {
     const d = dayOne();
     let s = exec(d.s, { type: "match.reopen", matchId: d.m.id });
     expect(d.counts(s)).toEqual(d.held);
     s = exec(s, { type: "match.score", matchId: d.m.id, scoreA: 7, scoreB: 13 });
     expect(pausedAt(s)).toEqual({ phase: "elimination", round: 3, teams: 16 });
     expect(d.counts(s)).toEqual(d.held);
+  });
+
+  it("after a reopened match is scored again, resume restarts the A, the B and the C; undoing resume holds them again", () => {
+    const d = dayOne();
+    let s = exec(d.s, { type: "match.reopen", matchId: d.m.id });
+    // A score of the B corrected while the A's match is open: the B is still held.
+    const bMatch = Object.values(s.matches).find((x) => s.rounds[x.roundId]!.bracket === "consolation" && x.status === "done" && x.sideB.length > 0)!;
+    s = exec(s, { type: "match.score", matchId: bMatch.id, scoreA: 13, scoreB: 11 });
+    expect(d.counts(s)).toEqual(d.held);
+    s = exec(s, { type: "match.score", matchId: d.m.id, scoreA: 13, scoreB: 2 });
+    expect(d.counts(s)).toEqual(d.held);
+    const r = applyCommand(s, { type: "tournament.resume", seed: "day2" }, { now: "2026-10-13T08:00:00.000Z", newId: createIdGenerator("resume-r") });
+    expect(d.counts(r.state)).toEqual({ main: d.held.main + 1, b: d.held.b + 1, c: d.held.c + (canDrawNext(s, "consolation_c") ? 1 : 0) });
+    const back = applyChanges(r.state, invertChanges(r.changes));
+    expect(back).toEqual(s);
+    expect(pausedAt(back)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    expect(playAll(r.state).tournament.status).toBe("finished");
   });
 });

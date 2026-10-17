@@ -636,13 +636,46 @@ export function pausedAt(state: EngineState): PausePoint | null {
 }
 
 /**
+ * True when the A's round in progress is the last one before the pause: once
+ * it is over, pausedAt holds the A's next draw. Derived from the state like
+ * pausedAt (nothing stored). Earlier rounds of the A never make it true.
+ */
+function pausePending(state: EngineState): boolean {
+  const rule = state.tournament.config.pause;
+  if (rule === null) return false;
+  const format = state.tournament.config.format;
+  if (rule === "afterPools") {
+    // The B and the C of a pools tournament start from finished pools or the final phase: nothing to draw before.
+    return format === "pools_then_bracket" && roundsOf(state, "main", "pool").length > 0 && roundsOf(state, "main", "final").length === 0;
+  }
+  const phase: Phase =
+    format === "pools_then_bracket" ? "final" : format === "swiss" ? "swiss" : format === "melee_rotation" ? "melee" : format === "round_robin" ? "league" : "elimination";
+  const last = lastRound(state, "main", phase);
+  if (!last || phase === "league" || isRoundComplete(state, last.id) || isFixedTree(state, last)) return false;
+  if (phase === "swiss" || phase === "melee") {
+    return "afterRound" in rule && last.number === rule.afterRound && last.number < totalRounds(state, phase, participants(state, phase).length);
+  }
+  // Teams left once the round is over: the winners already known, plus one per match still to play.
+  const ms = matchesOfRound(state, last.id);
+  const teams = new Set(ms.filter(isFinished).flatMap(winnerTeams).filter(stillIn(state))).size + ms.filter((m) => !isFinished(m)).length;
+  if (teams < 2) return false;
+  if ("afterRound" in rule) return last.number === rule.afterRound;
+  return teams <= rule.before.remaining && teamsInRound(state, last) > rule.before.remaining;
+}
+
+/**
  * Draws that happen on their own once the previous round is over (never the
  * first one). The two-day pause stops all of them: the B and the C wait with the A.
+ * While the A plays its last round before the pause, the B and the C go on as
+ * usual, except a draw that was already waiting before this action: it was
+ * held by the pause, and a day-1 match of the A reopened during the night
+ * (round no longer complete, pausedAt null) must not release it.
  */
 export function autoAdvance(tx: Transaction, ctx: DrawContext): void {
   const cfg = tx.state.tournament.config;
   for (let guard = 0; guard < 6; guard++) {
     if (pausedAt(tx.state)) return;
+    const pending = pausePending(tx.state);
     let drew = false;
     const mainStarted = Object.values(tx.state.rounds).some((r) => r.bracket === "main");
     if (cfg.autoNextRound && mainStarted && canDrawNext(tx.state, "main")) {
@@ -654,6 +687,7 @@ export function autoAdvance(tx: Transaction, ctx: DrawContext): void {
     for (const [bracket, tag] of [["consolation", "autoc"], ["consolation_c", "autocc"]] as const) {
       const started = roundsOf(tx.state, bracket).length > 0;
       const auto = started ? cfg.autoNextRound : bracketSettings(tx.state, bracket).entry === "auto";
+      if (pending && canDrawNext(tx.base, bracket)) continue;
       if (auto && canDrawNext(tx.state, bracket)) {
         drawNext(tx, { ...ctx, seed: `${ctx.seed}:${tag}${guard}` }, bracket);
         drew = true;
