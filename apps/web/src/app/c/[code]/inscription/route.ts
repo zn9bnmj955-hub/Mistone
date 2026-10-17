@@ -36,6 +36,8 @@ async function resolve(raw: string): Promise<{ code: string; loaded: LoadedTourn
   if (!isShortCode(code)) return notFound(raw.slice(0, 12));
   const loaded = await loadTournament(code);
   if (!loaded) return notFound(code);
+  // Purged (B3): personal data deleted for good, shown and refused as a closed link.
+  if (loaded.meta.purged_at) return { code, loaded: { ...loaded, meta: { ...loaded.meta, status: "archived" } } };
   return { code, loaded };
 }
 

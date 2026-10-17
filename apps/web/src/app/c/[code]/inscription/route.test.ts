@@ -6,6 +6,7 @@ import { requireSport } from "@orgasport/sports";
 
 vi.mock("server-only", () => ({}));
 let status = "finished";
+let purgedAt: string | null = null;
 const registerOnline = vi.fn();
 const rateLimit = vi.fn(async () => true);
 vi.mock("@/lib/tournament/load", () => ({
@@ -13,7 +14,7 @@ vi.mock("@/lib/tournament/load", () => ({
     meta: {
       id: "t1", short_code: "FAN2", name: "Concours fini", status, starts_at: "2026-10-12T12:00:00Z", registration_mode: "online",
       registration_closes_at: null, max_teams: null, waitlist_enabled: false, team_format: "doublette", eligibility: "open",
-      category: "all", config: {}, name_display: "full", fee_cents: 0, fee_per: "team", club: null, rules_pdf_path: null,
+      category: "all", config: {}, name_display: "full", fee_cents: 0, fee_per: "team", club: null, rules_pdf_path: null, purged_at: purgedAt,
     },
     sport: requireSport("petanque"),
     state: { teams: {} },
@@ -38,6 +39,7 @@ describe("POST /c/CODE/inscription after the end", () => {
   beforeEach(() => {
     registerOnline.mockReset();
     rateLimit.mockClear();
+    purgedAt = null;
   });
 
   it.each([
@@ -52,5 +54,16 @@ describe("POST /c/CODE/inscription after the end", () => {
     expect(body).not.toContain("<form");
     expect(registerOnline).not.toHaveBeenCalled();
     expect(rateLimit).not.toHaveBeenCalled();
+  });
+
+  it("purged (B3) while still published: 409, closed link, nothing registered", async () => {
+    status = "published";
+    purgedAt = "2026-10-01T03:23:00.000Z";
+    const res = await send();
+    expect(res.status).toBe(409);
+    const body = await res.text();
+    expect(body).toContain("Lien clôturé");
+    expect(body).not.toContain("<form");
+    expect(registerOnline).not.toHaveBeenCalled();
   });
 });

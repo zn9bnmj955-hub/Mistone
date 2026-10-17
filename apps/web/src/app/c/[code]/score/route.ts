@@ -28,9 +28,9 @@ export async function POST(request: NextRequest, { params }: Ctx) {
 
   const loaded = await loadTournament(code, { secrets: true });
   if (!loaded) return back("notPlayable");
-  // Finished: only the scoring table may still correct; closed (archived): nothing at all.
+  // Finished: only the scoring table may still correct; closed (archived) or purged: nothing at all.
   const status = loaded.state.tournament.status;
-  if (status === "archived") return back("closed");
+  if (status === "archived" || loaded.meta.purged_at) return back("closed");
   if (status === "finished") return back("ended");
   if (loaded.state.tournament.config.scoreEntry !== "captains") return back("notPlayable");
   if (!(await rateLimit(`captain:${loaded.meta.id}:${clientIp(request)}`, 20, 900))) return back("limited");

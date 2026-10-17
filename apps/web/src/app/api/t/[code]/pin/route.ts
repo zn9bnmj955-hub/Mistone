@@ -12,8 +12,8 @@ export async function POST(request: NextRequest, { params }: Ctx) {
   const { code } = await params;
   const t = await findTournamentRow(code);
   if (!t || !t.short_code) return json({ error: { code: "NOT_FOUND" } }, 404);
-  // Closed for good: no more PIN sessions (not counted as a failed attempt).
-  if (t.status === "archived") return json({ error: { code: "TOURNAMENT_ARCHIVED" } }, 403);
+  // Closed for good or purged: no more PIN sessions (not counted as a failed attempt).
+  if (t.status === "archived" || t.purged_at) return json({ error: { code: "TOURNAMENT_ARCHIVED" } }, 403);
   const ip = clientIp(request);
   // Brute-force protection: 8 wrong PINs per device and 60 per tournament
   // every 15 minutes. Successful logins are not counted.

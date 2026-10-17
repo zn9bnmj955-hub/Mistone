@@ -37,7 +37,7 @@ export async function rateLimited(key: string, max: number, windowSeconds: numbe
 export async function findTournamentRow(rawCode: string) {
   const code = normalizeShortCode(rawCode);
   if (!isShortCode(code)) return null;
-  const { data } = await createAdminClient().from("tournaments").select("id, short_code, status").eq("short_code", code).neq("status", "draft").maybeSingle();
+  const { data } = await createAdminClient().from("tournaments").select("id, short_code, status, purged_at").eq("short_code", code).neq("status", "draft").maybeSingle();
   return data;
 }
 
