@@ -9,13 +9,14 @@ import { makeState, playToEnd } from "../../../../../packages/engine/src/test-he
 let current: EngineState;
 const rpcCalls: { p_changes: { table: string; values?: Record<string, unknown> }[] }[] = [];
 let actions: Record<string, unknown>[] = [];
+let currentMeta: Record<string, unknown> = {};
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/server", () => ({ after: () => {} }));
 vi.mock("@/lib/env", () => ({ env: { supabaseUrl: "http://localhost" } }));
 vi.mock("@/lib/notifications/server", () => ({ notifyFromChanges: async () => {} }));
 vi.mock("./load", () => ({
-  loadTournament: async () => ({ meta: { id: "t1" }, version: 7, state: current }),
+  loadTournament: async () => ({ meta: { id: "t1", ...currentMeta }, version: 7, state: current }),
 }));
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -61,6 +62,7 @@ const tournamentValues = () => rpcCalls.at(-1)!.p_changes.find((c) => c.table ==
 beforeEach(() => {
   rpcCalls.length = 0;
   actions = [];
+  currentMeta = {};
 });
 
 describe("finished_at", () => {
@@ -165,5 +167,25 @@ describe("closed tournament (archived)", () => {
     actions = [{ id: 42, tournament_id: "t1", client_op_id: OP, state_version: 6 }];
     const res = await executeCommand({ code: "ABCD", command: { type: "tournament.close" }, clientOpId: OP, actor: null, source: "system" });
     expect(res).toMatchObject({ ok: true, duplicate: true, actionId: 42 });
+  });
+});
+
+describe("purged tournament (B3, safety net at 6 months)", () => {
+  // The purge also takes a published tournament started more than 6 months ago, without
+  // closing it (status stays 'published'). Once purged_at is set the purge never runs again
+  // on it, so any new team or player written afterwards would be kept forever.
+  // Gap found: executeCommand only refuses 'archived', not a purged tournament.
+  it.fails("refuses a new team on a purged tournament that was never closed", async () => {
+    current = makeState({ teams: 4, status: "published" });
+    currentMeta = { purged_at: "2026-10-01T03:23:00.000Z" };
+    const res = await executeCommand({
+      code: "ABCD",
+      command: { type: "team.create", players: [{ firstName: "Jean", lastName: "Dupont" }], source: "online" },
+      clientOpId: OP,
+      actor: null,
+      source: "online",
+    });
+    expect(res.ok).toBe(false);
+    expect(rpcCalls).toHaveLength(0);
   });
 });
