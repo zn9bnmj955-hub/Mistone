@@ -750,6 +750,31 @@ begin
   end if;
 end $$;
 
+-- B3 (correction). The 6-month safety net also closes the tournament for good: a 'live'
+-- tournament started 7 months ago is purged AND archived (no new team, score or PIN sign-in
+-- whose data would never be purged), its finished_at left as it was (null).
+do $$
+declare
+  club uuid;
+  t_live uuid; code_live text;
+  purged text[];
+begin
+  select club_id into club from public.tournaments where short_code = 'GP3M';
+  insert into public.tournaments (club_id, sport_slug, name, status, starts_at)
+    values (club, 'petanque', 'En direct depuis 7 mois', 'live', now() - interval '7 months')
+    returning id, short_code into t_live, code_live;
+  purged := public.purge_finished_tournaments(now());
+  if not (code_live = any(purged)) or (select purged_at from public.tournaments where id = t_live) is null then
+    raise exception 'B3: a live tournament started 7 months ago must be purged';
+  end if;
+  if (select status from public.tournaments where id = t_live) <> 'archived' then
+    raise exception 'B3: a tournament purged by the 6-month safety net must be archived';
+  end if;
+  if (select finished_at from public.tournaments where id = t_live) is not null then
+    raise exception 'B3: the purge must keep finished_at as it was';
+  end if;
+end $$;
+
 -- Only the server (service role, pg_cron) may run the purge.
 select pg_temp.as_user('club@demo.orgasport.fr');
 do $$ begin
