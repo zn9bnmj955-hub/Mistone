@@ -189,3 +189,40 @@ describe("two-day pause — the C already started (testeur)", () => {
     expect(playAll(r.state).tournament.status).toBe("finished");
   });
 });
+
+describe("two-day pause — winner changed during the night (testeur)", () => {
+  const dayOne = () => {
+    let s = exec(makeState({ teams: 64, config: { ...ABC, pause: { before: { remaining: 16 } } } }), { type: "round.draw", bracket: "main", seed: "d1" });
+    s = playAll(s);
+    const held = { main: count(s, "main"), b: count(s, "consolation"), c: count(s, "consolation_c") };
+    const last = roundsOf(s, "main")[held.main - 1]!;
+    const m = Object.values(s.matches).find((x) => x.roundId === last.id && x.status === "done" && x.sideB.length > 0)!;
+    return { s, held, m, counts: (x: EngineState) => ({ main: count(x, "main"), b: count(x, "consolation"), c: count(x, "consolation_c") }) };
+  };
+
+  it("a corrected score that changes the winner keeps the pause; resume draws the new winner, with no time computed", () => {
+    const d = dayOne();
+    let s = exec(d.s, { type: "match.score", matchId: d.m.id, scoreA: 7, scoreB: 13 });
+    expect(pausedAt(s)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    expect(d.counts(s)).toEqual(d.held);
+    const now = "2026-10-13T08:00:00.000Z";
+    s = applyCommand(s, { type: "tournament.resume", seed: "day2" }, { now, newId: createIdGenerator("resume-n") }).state;
+    const next = Object.values(s.matches).filter((x) => x.roundId === roundsOf(s, "main")[d.held.main]!.id);
+    const drawn = next.flatMap((x) => [...x.sideA, ...x.sideB]);
+    expect(drawn).toContain(d.m.sideB[0]);
+    expect(drawn).not.toContain(d.m.sideA[0]);
+    // No hour is computed: a match only carries the moment it got its pitch (the resume itself), never a projected time.
+    expect(next.every((x) => x.scheduledAt === null || x.scheduledAt === now)).toBe(true);
+  });
+
+  // Écart relevé : pendant qu'un match du A est rouvert, pausedAt est null (le tour du A n'est plus complet),
+  // donc autoAdvance tire le tour suivant du B puis le 1er tour du C — la pause du soir est perdue pour eux.
+  it.fails("reopening a day-1 match of the A during the pause does not draw the B or the C", () => {
+    const d = dayOne();
+    let s = exec(d.s, { type: "match.reopen", matchId: d.m.id });
+    expect(d.counts(s)).toEqual(d.held);
+    s = exec(s, { type: "match.score", matchId: d.m.id, scoreA: 7, scoreB: 13 });
+    expect(pausedAt(s)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    expect(d.counts(s)).toEqual(d.held);
+  });
+});
