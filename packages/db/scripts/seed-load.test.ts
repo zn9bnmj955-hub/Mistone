@@ -2,6 +2,9 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
+import { pausedAt, resolveConfig, roundLabel, rulesFromSport, teamAffiliation, type EngineState } from "@orgasport/engine";
+import { requireSport } from "@orgasport/sports";
+import { rowsToEngineState } from "../src/engine-mapping";
 
 /**
  * P2 acceptance without touching the demo database: the generated seed is
@@ -91,5 +94,50 @@ describe.skipIf(!running)("demo seed loaded into the current schema (P2)", () =>
     expect(shape("2J7P", "main")).toEqual(["1:12:0", "2:8:4"]);
     expect(rows(`select t.config->>'format' || ':' || t.team_format || ':' || count(te.*) from public.tournaments t
       join public.teams te on te.tournament_id = t.id where t.short_code = 'PQ8P' group by t.id`)).toEqual(["pools_then_bracket:triplette:8"]);
+  });
+  /** The engine state as the site rebuilds it (same columns as apps/web/src/lib/tournament/load.ts). */
+  function stateOf(code: string): EngineState {
+    const where = `tournament_id = (select id from public.tournaments where short_code = '${code}')`;
+    const json = (cols: string, from: string) => JSON.parse(rows(`select coalesce(jsonb_agg(x order by x.id), '[]') from (select ${cols} from ${from}) x`)[0]!);
+    const t = JSON.parse(rows(`select row_to_json(t) from (select id, status, starts_at, max_teams, sport_slug, team_format, config from public.tournaments where short_code = '${code}') t`)[0]!);
+    const sport = requireSport(t.sport_slug);
+    return rowsToEngineState(
+      {
+        tournament: { id: t.id, status: t.status, starts_at: t.starts_at, max_teams: t.max_teams },
+        teams: json("id, number, name, club_name, status, seed, bracket, checked_in_at, bracket_entries", `public.teams where ${where}`),
+        players: json("p.id, p.team_id, p.first_name, p.last_name, p.position, p.club_number, p.club_name", `public.players p join public.teams te on te.id = p.team_id where te.${where}`),
+        venues: json("id, label, position, reserved_for_finals, available", `public.venues where ${where}`),
+        rounds: json("id, bracket, phase, kind, number, status, seed, drawn_at", `public.rounds where ${where}`),
+        matches: json(
+          "id, round_id, position, pool, team_a_id, team_b_id, side_a, side_b, venue_id, scheduled_at, started_at, ended_at, queued_at, score_a, score_b, tiebreak_a, tiebreak_b, winner_side, status",
+          `public.matches where ${where}`,
+        ),
+        teamSecrets: [],
+        registrations: json("id, team_id, source", `public.registrations where ${where}`),
+      },
+      rulesFromSport(sport, t.team_format, t.config),
+      resolveConfig(t.config, sport),
+    );
+  }
+
+  it("as the site reloads them: 7KQ2 shows « Cadrage » with one « Office », N.H. and club teams; C4DR a cadrage in A, B, C; 2J7P on pause", () => {
+    // rounds.kind stays 'partie' in the seed: the label must still come out as « Cadrage » after the reload.
+    const s = stateOf("7KQ2");
+    const main = Object.values(s.rounds).filter((r) => r.bracket === "main").sort((a, b) => a.number - b.number);
+    expect(main.map((r) => roundLabel(s, r).key)).toEqual(["partie", "cadrage"]);
+    const cadrage = Object.values(s.matches).filter((m) => m.roundId === main[1]!.id);
+    expect(cadrage.filter((m) => m.status === "bye").length).toBe(1);
+    const kinds = Object.keys(s.teams).map((id) => teamAffiliation(s, id).kind);
+    expect(kinds).toContain("nh");
+    expect(kinds).toContain("club");
+
+    const c = stateOf("C4DR");
+    for (const b of ["main", "consolation", "consolation_c"]) {
+      expect(Object.values(c.rounds).some((r) => r.bracket === b && roundLabel(c, r).key === "cadrage"), b).toBe(true);
+    }
+
+    const p = stateOf("2J7P");
+    expect(p.tournament.status).toBe("live");
+    expect(pausedAt(p)).not.toBeNull();
   });
 });
