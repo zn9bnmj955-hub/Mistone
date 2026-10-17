@@ -64,10 +64,8 @@ describe("« Enregistrer pour hors ligne » file (T4)", () => {
     expect(Buffer.byteLength(saved)).toBeLessThan(100_000);
   });
 
-  // Known gap (testeur, T4): the captain form of a remembered team is only hidden by CSS
-  // (html.saved .score-form) but still written in the file. it.fails keeps the suite green
-  // and turns red as soon as render.ts leaves the form out: then change it.fails to it.
-  it.fails("contains no form, input or button even for a remembered team with a game to score", () => {
+  // The captain form of a remembered team is left out of the file (not only hidden by CSS).
+  it("contains no form, input or button even for a remembered team with a game to score", () => {
     expect(render(true)).not.toMatch(/<form|<input|<button/);
   });
 });

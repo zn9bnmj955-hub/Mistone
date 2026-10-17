@@ -63,6 +63,8 @@ interface Ctx {
   /** Team remembered on this device ("C'est mon équipe"). */
   rememberedId: string | null;
   base: string;
+  /** « Enregistrer pour hors ligne » file: no form, input or button is written. */
+  saved: boolean;
 }
 
 function link(ctx: Ctx, params: Record<string, string | number | null>): string {
@@ -86,7 +88,7 @@ function scoreText(match: Match, side: "A" | "B"): string {
 
 function captainForm(ctx: Ctx, team: TeamView, info: MyMatchInfo): SafeHtml {
   const c = ctx.m.terrain.captain;
-  if (ctx.t.state.tournament.config.scoreEntry !== "captains" || isEnded(ctx.t.state)) return html``;
+  if (ctx.saved || ctx.t.state.tournament.config.scoreEntry !== "captains" || isEnded(ctx.t.state)) return html``;
   if (!["ready", "playing", "score_submitted", "disputed"].includes(info.match.status)) return html``;
   return html`<form class="score-form" method="post" action="${ctx.base}/score">
     <p class="k">${c.title}</p>
@@ -452,6 +454,7 @@ export function renderTerrainPage(t: RenderInput, opts: { fragment: boolean; sta
     mineIds: new Set(),
     rememberedId: null,
     base: `/c/${code}`,
+    saved: opts.standalone === true,
   };
   const mineTeam = t.mine ? [...teams.values()].find((x) => x.number === t.mine) : undefined;
   if (mineTeam) {
