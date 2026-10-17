@@ -163,6 +163,28 @@ describe("« Résultats par équipes » (T3)", () => {
     expect((h.match(/<script>/gi) ?? []).length).toBe(1);
   });
 
+  it("status of each team shown exactly: Inscrite, Pointée, Liste d'attente, Forfait, Retirée; an absent team after the draw is « Forfait » with no path", () => {
+    let s = withPlayers(makeState({ teams: 8 }));
+    const st = (n: number, status: string) => (s = exec(s, { type: "team.setStatus", teamId: `team-00${n}`, status } as never));
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8]) st(n, "registered");
+    st(2, "checked_in");
+    st(3, "waitlist");
+    st(4, "forfeit");
+    st(5, "withdrawn");
+    const before = page(s, { status: "published" });
+    const label = (h: string, n: number) => /<span class="st">([^<]+)<\/span>/.exec(rowOf(h, n))?.[1];
+    expect([1, 2, 3, 4, 5].map((n) => label(before, n))).toEqual(["Inscrite", "Pointée", "Liste d&#39;attente", "Forfait", "Retirée"]);
+
+    // Draw with the others checked in: the forfeit team never plays and keeps « Forfait », without any game line.
+    for (const n of [1, 2, 6, 7, 8]) st(n, "checked_in");
+    s = exec(s, { type: "round.draw", bracket: "main", seed: "t3-status" });
+    const after = page(s);
+    expect(label(after, 4)).toBe("Forfait");
+    expect(rowOf(after, 4)).not.toMatch(/partie :/);
+    expect(rowOf(after, 2)).toContain("Concours A : en lice");
+    expect(rowOf(after, 2)).not.toContain("Pointée");
+  });
+
   it("256 triplettes played to the end (A and B): under 100 KB", () => {
     const s = playToEnd(
       withPlayers(makeState({ teams: 256, config: { bracketMode: "redraw", cadrage: { afterRound: 1 }, consolation: { enabled: true, entry: "auto" } } })),
