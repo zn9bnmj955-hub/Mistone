@@ -15,11 +15,12 @@ const cache = join(root, ".cache");
 mkdirSync(out, { recursive: true });
 mkdirSync(cache, { recursive: true });
 
+// budget: at most 10 % above the weight of the lot 1 render (task P3), in bytes.
 const VIDEOS = {
-  Decouverte169: { file: "decouverte-16x9", music: "decouverte", poster: 71 },
-  Decouverte916: { file: "decouverte-9x16", music: "decouverte", poster: 71 },
-  Tutoriel169: { file: "tutoriel-16x9", music: "tutoriel", poster: 4 },
-  Tutoriel916: { file: "tutoriel-9x16", music: "tutoriel", poster: 4 },
+  Decouverte169: { file: "decouverte-16x9", music: "decouverte", poster: 71, budget: 9.69e6 },
+  Decouverte916: { file: "decouverte-9x16", music: "decouverte", poster: 71, budget: 8.87e6 },
+  Tutoriel169: { file: "tutoriel-16x9", music: "tutoriel", poster: 4, budget: 12.6e6 },
+  Tutoriel916: { file: "tutoriel-9x16", music: "tutoriel", poster: 4, budget: 11.69e6 },
 };
 
 const args = process.argv.slice(2);
@@ -81,9 +82,9 @@ for (const id of ids) {
     tmp,
   ]);
   renameSync(tmp, mp4);
-  // Size budget (≤ 12 MB): re-encode the video track with a higher CRF if needed.
-  for (const crf of [31, 33, 35, 37]) {
-    if (statSync(mp4).size <= 12e6) break;
+  // Size budget: re-encode the video track with a higher CRF if needed.
+  for (const crf of [29, 30, 31, 33, 35, 37]) {
+    if (statSync(mp4).size <= v.budget) break;
     run("ffmpeg", [
       "-y", "-loglevel", "error", "-i", raw, "-i", mp4, "-map", "0:v", "-map", "1:a",
       "-c:v", "libx264", "-preset", "slow", "-crf", String(crf), "-pix_fmt", "yuv420p",
