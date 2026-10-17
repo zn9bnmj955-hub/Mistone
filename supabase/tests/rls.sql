@@ -711,6 +711,45 @@ begin
   end if;
 end $$;
 
+-- B3 (testeur). Limits of the purge: exactly 14 days after the final is purged (14 days of
+-- retention, not 15); a draft is never purged, even 7 months old (nothing was ever published);
+-- the purge uses the time it is given (p_now), not the clock.
+do $$
+declare
+  club uuid;
+  t_edge uuid; t_draft uuid; t_later uuid;
+  purged text[];
+begin
+  select club_id into club from public.tournaments where short_code = 'GP3M';
+  insert into public.tournaments (club_id, sport_slug, name, status, finished_at, starts_at)
+    values (club, 'petanque', 'Purge pile 14 jours', 'archived', now() - interval '14 days', now() - interval '14 days')
+    returning id into t_edge;
+  insert into public.tournaments (club_id, sport_slug, name, status, starts_at, created_at)
+    values (club, 'petanque', 'Brouillon ancien', 'draft', now() - interval '7 months', now() - interval '7 months')
+    returning id into t_draft;
+  insert into public.tournaments (club_id, sport_slug, name, status, finished_at, starts_at)
+    values (club, 'petanque', 'Purge plus tard', 'archived', now() - interval '10 days', now() - interval '10 days')
+    returning id into t_later;
+  insert into public.teams (tournament_id, number, name) values (t_draft, 1, 'Brouillon');
+
+  purged := public.purge_finished_tournaments(now());
+  if (select purged_at from public.tournaments where id = t_edge) is null then
+    raise exception 'B3: a tournament finished exactly 14 days ago must be purged';
+  end if;
+  if (select purged_at from public.tournaments where id = t_draft) is not null
+     or not exists (select 1 from public.teams where tournament_id = t_draft and name = 'Brouillon') then
+    raise exception 'B3: a draft must never be purged';
+  end if;
+  if (select purged_at from public.tournaments where id = t_later) is not null then
+    raise exception 'B3: a tournament finished 10 days ago must not be purged yet';
+  end if;
+  -- Five days later (p_now), the same tournament is due.
+  purged := public.purge_finished_tournaments(now() + interval '5 days');
+  if (select purged_at from public.tournaments where id = t_later) is distinct from now() + interval '5 days' then
+    raise exception 'B3: the purge must use p_now (purged_at = p_now)';
+  end if;
+end $$;
+
 -- Only the server (service role, pg_cron) may run the purge.
 select pg_temp.as_user('club@demo.orgasport.fr');
 do $$ begin
