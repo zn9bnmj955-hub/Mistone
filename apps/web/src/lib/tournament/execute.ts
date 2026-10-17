@@ -76,7 +76,11 @@ export function stampFinishedAt(dbChanges: DbChange[], before: Status, after: St
   return dbChanges.map((c) => (c.table === "tournaments" && c.op === "update" ? { ...c, values: { ...c.values, finished_at: finishedAt } } : c));
 }
 
-/** A closed tournament (archived) accepts nothing more, not even an undo. */
+/**
+ * A closed tournament (archived) accepts nothing more, not even an undo. Same for a purged
+ * one (purged_at set): new data would never be purged (the purge never runs twice).
+ */
+const isClosed = (loaded: LoadedTournament) => loaded.state.tournament.status === "archived" || !!loaded.meta.purged_at;
 const ARCHIVED: ExecuteResult = { ok: false, error: { code: "TOURNAMENT_ARCHIVED" }, status: 422 };
 
 async function persist(
@@ -128,7 +132,7 @@ export async function executeCommand(args: {
     const loaded = await loadTournament(args.code, { secrets: true });
     if (!loaded) return { ok: false, error: { code: "NOT_FOUND" }, status: 404 };
     const now = actionTime(args.at);
-    if (loaded.state.tournament.status === "archived") {
+    if (isClosed(loaded)) {
       // A retried operation that was applied before the close is still a success.
       const dup = await findAction(loaded.meta.id, args.clientOpId);
       if (dup) return { ok: true, version: dup.state_version ?? loaded.version, actionId: dup.id, changes: [], duplicate: true };
@@ -190,7 +194,7 @@ export async function undoAction(args: { code: string; actionId: number; clientO
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const loaded = await loadTournament(args.code, { secrets: true });
     if (!loaded) return { ok: false, error: { code: "NOT_FOUND" }, status: 404 };
-    if (loaded.state.tournament.status === "archived") return ARCHIVED;
+    if (isClosed(loaded)) return ARCHIVED;
     const { data: target } = await admin
       .from("tournament_actions")
       .select("id, type, changes, undone_at, created_at")

@@ -174,8 +174,8 @@ describe("purged tournament (B3, safety net at 6 months)", () => {
   // The purge also takes a published tournament started more than 6 months ago, without
   // closing it (status stays 'published'). Once purged_at is set the purge never runs again
   // on it, so any new team or player written afterwards would be kept forever.
-  // Gap found: executeCommand only refuses 'archived', not a purged tournament.
-  it.fails("refuses a new team on a purged tournament that was never closed", async () => {
+  // The purge now archives it too; executeCommand also refuses on purged_at (defence in depth).
+  it("refuses a new team on a purged tournament that was never closed", async () => {
     current = makeState({ teams: 4, status: "published" });
     currentMeta = { purged_at: "2026-10-01T03:23:00.000Z" };
     const res = await executeCommand({
@@ -185,7 +185,25 @@ describe("purged tournament (B3, safety net at 6 months)", () => {
       actor: null,
       source: "online",
     });
-    expect(res.ok).toBe(false);
+    expect(res).toEqual({ ok: false, error: { code: "TOURNAMENT_ARCHIVED" }, status: 422 });
+    expect(rpcCalls).toHaveLength(0);
+  });
+
+  it("refuses undo on a purged tournament", async () => {
+    current = makeState({ teams: 4, status: "live" });
+    currentMeta = { purged_at: "2026-10-01T03:23:00.000Z" };
+    actions = [{ id: 5, tournament_id: "t1", type: "match.score", changes: [], undone_at: null }];
+    const res = await undoAction({ code: "ABCD", actionId: 5, clientOpId: OP, actor: staff });
+    expect(res).toEqual({ ok: false, error: { code: "TOURNAMENT_ARCHIVED" }, status: 422 });
+    expect(rpcCalls).toHaveLength(0);
+  });
+
+  it("still answers a retried operation applied before the purge", async () => {
+    current = makeState({ teams: 4, status: "live" });
+    currentMeta = { purged_at: "2026-10-01T03:23:00.000Z" };
+    actions = [{ id: 42, tournament_id: "t1", client_op_id: OP, state_version: 6 }];
+    const res = await executeCommand({ code: "ABCD", command: { type: "round.draw", bracket: "main", seed: "x" }, clientOpId: OP, actor: staff });
+    expect(res).toMatchObject({ ok: true, duplicate: true, actionId: 42 });
     expect(rpcCalls).toHaveLength(0);
   });
 });
