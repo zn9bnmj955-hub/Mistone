@@ -221,3 +221,20 @@ describe("draw sheets: concours C and my team when it lost (T2, testeur)", () =>
     expect(sheet).not.toContain(`<td class="l me"><i>${winner}</i>`);
   });
 });
+
+describe("draw sheets: live refresh (T2, testeur)", () => {
+  it("the live fragment (Realtime or 30 s refresh) carries the same sheets, links and my team card on top as the full page", () => {
+    const s = thirteen();
+    const input = { meta, sport: petanque, state: s, version: 1, view: "tirage", query: null, mine: 5, message: null, now: new Date("2026-10-12T14:30:00Z") } as RenderInput;
+    const full = renderTerrainPage(input, { fragment: false });
+    const frag = renderTerrainPage(input, { fragment: true });
+    expect(frag.startsWith('<div id="live"')).toBe(true);
+    expect(tables(frag)).toEqual(tables(full));
+    expect(tables(frag).length).toBeGreaterThanOrEqual(3);
+    expect(frag).toContain('href="#concours-b"');
+    expect(frag).toContain('<a href="/c/7KQ2/equipes">Résultats par équipes</a>');
+    expect(frag.indexOf('id="mon-equipe"')).toBeGreaterThan(0);
+    expect(frag.indexOf('id="mon-equipe"')).toBeLessThan(frag.indexOf('<table class="sheet">'));
+    expect(full).toContain(frag);
+  });
+});
