@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 type Row = { id: string; short_code: string | null; status: string; finished_at: string | null };
 let rows: Row[] = [];
 const commands: { code: string; clientOpId: string; command: unknown; source?: string }[] = [];
+let failing = new Set<string>();
 
 vi.mock("server-only", () => ({}));
 vi.mock("./execute", () => ({
   executeCommand: async (args: (typeof commands)[number]) => {
     commands.push(args);
+    if (failing.has(args.code)) return { ok: false, error: { code: "CONFLICT" }, status: 409 };
     return { ok: true, version: 1, actionId: 1, changes: [], duplicate: false };
   },
 }));
@@ -38,6 +40,7 @@ const H = 3600_000;
 
 beforeEach(() => {
   commands.length = 0;
+  failing = new Set();
 });
 
 describe("closeExpiredTournaments", () => {
@@ -60,6 +63,21 @@ describe("closeExpiredTournaments", () => {
     ];
     expect(await closeExpiredTournaments(NOW)).toEqual([]);
     expect(commands).toHaveLength(0);
+  });
+
+  it("a refused close is not reported and does not stop the others (retried at the next tick)", async () => {
+    rows = [
+      { id: "c1", short_code: "GGGG", status: "finished", finished_at: ago(30 * H) },
+      { id: "c2", short_code: "HHHH", status: "finished", finished_at: ago(26 * H) },
+      { id: "c3", short_code: null, status: "finished", finished_at: ago(25 * H) },
+    ];
+    failing = new Set(["GGGG"]);
+    expect(await closeExpiredTournaments(NOW)).toEqual(["HHHH"]);
+    expect(commands.map((c) => c.code)).toEqual(["GGGG", "HHHH"]);
+    failing = new Set();
+    commands.length = 0;
+    expect(await closeExpiredTournaments(NOW)).toEqual(["GGGG", "HHHH"]);
+    expect(commands[0]!.clientOpId).toBe(closeOpId("c1"));
   });
 
   it("uses a stable, valid operation id per tournament (two ticks close once)", () => {
