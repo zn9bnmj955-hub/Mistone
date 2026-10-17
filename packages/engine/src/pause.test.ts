@@ -243,3 +243,29 @@ describe("two-day pause — winner changed during the night (testeur)", () => {
     expect(playAll(r.state).tournament.status).toBe("finished");
   });
 });
+
+describe("two-day pause — a match of the B reopened during the night too (testeur)", () => {
+  // Un match du A et un match du B rouverts la nuit : quand le match du B est ressaisi, le tirage du B n'était pas
+  // possible avant cette action (son tour était incomplet) ; il doit rester tenu jusqu'à la reprise.
+  // ÉCART relevé (après 1b54aab) : le B tire son tour suivant et le C son 1er tour pendant la nuit -> it.fails.
+  for (const order of ["A puis B", "B puis A"] as const) {
+    it.fails(`A and B matches reopened (${order}), the B match scored again: the B and the C stay held until resume`, () => {
+      let s = exec(makeState({ teams: 64, config: { ...ABC, pause: { before: { remaining: 16 } } } }), { type: "round.draw", bracket: "main", seed: "d1" });
+      s = playAll(s);
+      const counts = (x: EngineState) => ({ main: count(x, "main"), b: count(x, "consolation"), c: count(x, "consolation_c") });
+      const held = counts(s);
+      const lastA = roundsOf(s, "main")[held.main - 1]!;
+      const lastB = roundsOf(s, "consolation")[held.b - 1]!;
+      const aMatch = Object.values(s.matches).find((x) => x.roundId === lastA.id && x.status === "done" && x.sideB.length > 0)!;
+      const bMatch = Object.values(s.matches).find((x) => x.roundId === lastB.id && x.status === "done" && x.sideB.length > 0)!;
+      const reopen = (id: string) => (s = exec(s, { type: "match.reopen", matchId: id }));
+      if (order === "A puis B") { reopen(aMatch.id); reopen(bMatch.id); } else { reopen(bMatch.id); reopen(aMatch.id); }
+      expect(counts(s)).toEqual(held);
+      s = exec(s, { type: "match.score", matchId: bMatch.id, scoreA: 13, scoreB: 11 });
+      expect(counts(s)).toEqual(held);
+      s = exec(s, { type: "match.score", matchId: aMatch.id, scoreA: 13, scoreB: 2 });
+      expect(counts(s)).toEqual(held);
+      expect(pausedAt(s)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    });
+  }
+});
