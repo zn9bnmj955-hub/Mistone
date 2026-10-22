@@ -177,7 +177,7 @@ Arrivé à ce point, le tirage automatique s''arrête : les concours A, B et C s
 
 À la table de marque, un bandeau « Concours en pause » indique combien d''équipes sont encore en lice. Pendant la nuit, l''organisateur peut encore corriger un score ou un forfait : le tour suivant n''est pas tiré pour autant, ni dans le A, ni dans le B, ni dans le C.
 
-Le lendemain, la table de marque touche « Reprendre le concours » : le tour suivant est tiré et l''enchaînement automatique reprend pour les trois concours. Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.', true
+Le lendemain, la table de marque touche « Reprendre le concours » : le tour suivant est tiré et l''enchaînement automatique reprend pour les trois concours. Un tirage manuel du tour suivant du concours A a le même effet : il relance aussi le concours après la pause (B et C compris). Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.', true
   where not exists (select 1 from public.kb_documents where title = 'Aide OrgaSport : concours sur 2 jours');
 insert into public.kb_documents (title, sport_slug, source_url, kind, version_date, reviewed_at, body, published)
   select 'Aide OrgaSport : clôture du concours et suppression des résultats', null, null, 'help', null, '2026-10-22', 'Quand la finale est jouée, le concours est « terminé » : l''organisateur peut encore corriger un score, un forfait ou annuler une action. Le lien concours sert pour un seul concours.
@@ -227,7 +227,7 @@ update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide Or
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : le cadrage et les qualifiés d''office (Office)' and kind = 'help' and reviewed_at is null and md5(body) = '6fabc4c8cf7f2f7bc91e630f820b3b43';
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : N.H. (équipe non homogène)' and kind = 'help' and reviewed_at is null and md5(body) = '8b2047d344cb1b15dde1b7cc218b2d92';
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours B et C' and kind = 'help' and reviewed_at is null and md5(body) = '8db70f64af232edfae67bd5647d528b6';
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours sur 2 jours' and kind = 'help' and reviewed_at is null and md5(body) = 'c948c91a87fdf700acfa75e8b3fa0d36';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours sur 2 jours' and kind = 'help' and reviewed_at is null and md5(body) = '6c78260b4ac2d2f4b20a201f728b2d17';
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : clôture du concours et suppression des résultats' and kind = 'help' and reviewed_at is null and md5(body) = 'd65630553b1e94bd8a15b040d4f37025';
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : pointage, forfaits, exempts et liste d''attente' and kind = 'help' and reviewed_at is null and md5(body) = '6573142152bc9ca469af28eb3d507cb8';
 update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : saisie des scores par les capitaines' and kind = 'help' and reviewed_at is null and md5(body) = '87e18120ea1fb15724603ede4151388a';

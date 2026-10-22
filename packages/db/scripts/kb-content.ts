@@ -229,7 +229,7 @@ Arrivé à ce point, le tirage automatique s'arrête : les concours A, B et C se
 
 À la table de marque, un bandeau « Concours en pause » indique combien d'équipes sont encore en lice. Pendant la nuit, l'organisateur peut encore corriger un score ou un forfait : le tour suivant n'est pas tiré pour autant, ni dans le A, ni dans le B, ni dans le C.
 
-Le lendemain, la table de marque touche « Reprendre le concours » : le tour suivant est tiré et l'enchaînement automatique reprend pour les trois concours. Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.`,
+Le lendemain, la table de marque touche « Reprendre le concours » : le tour suivant est tiré et l'enchaînement automatique reprend pour les trois concours. Un tirage manuel du tour suivant du concours A a le même effet : il relance aussi le concours après la pause (B et C compris). Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.`,
   },
   {
     title: "Aide OrgaSport : clôture du concours et suppression des résultats",

@@ -32,7 +32,7 @@ describe("knowledge base", async () => {
   it("has a help sheet for each feature asked by the owner", () => {
     const all = KB_DOCS.map((d) => `${d.title}\n${d.body}`).join("\n");
     for (const topic of [
-      /PIN/, /cadrage/i, /Office/, /N\.H\./, /concours B/, /concours C/, /2 jours/, /Reprendre le concours/, /Clore définitivement/, /14 jours/,
+      /PIN/, /cadrage/i, /Office/, /N\.H\./, /concours B/, /concours C/, /2 jours/, /Reprendre le concours/, /tirage manuel du tour suivant du concours A/, /Clore définitivement/, /14 jours/,
       /Pointage/, /liste d'attente/, /Forfait/, /capitaines/, /code équipe/,
     ]) {
       expect(all).toMatch(topic);
