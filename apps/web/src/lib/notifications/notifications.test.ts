@@ -189,7 +189,7 @@ describe("cadrage, Office, B/C and pause", () => {
     const paused = events.filter((e) => e.kind === "paused");
     expect(paused).toHaveLength(1);
     expect(paused[0]!.key).toBe("pause:elimination:2");
-    expect(paused[0]!.teamIds).toHaveLength(8);
+    expect(paused[0]!.teamIds).toHaveLength(4); // no B: only the winners of the 1st round are still in
     expect(events.filter((e) => e.kind === "draw_published")).toHaveLength(1); // the 2nd round waits
     expect(renderBody(requireSport("petanque"), "paused", {})).toBe("Fin de la journée. Reprise demain : le prochain tirage sera publié sur la page du concours.");
     // A correction during the night says nothing new.
@@ -389,10 +389,9 @@ describe("B4 — cases checked by the tester", () => {
     expect(morning.some((e) => e.kind === "paused")).toBe(false);
   });
 
-  // Gap found by the tester (not fixed): the « paused » event goes to every team still
-  // « registered » / « checked_in », and teams are never marked eliminated, so teams out of
-  // every bracket also get « Reprise demain : le prochain tirage… » (and the email fallback).
-  it.fails("pause without B: teams already out of the tournament do not get « Reprise demain »", () => {
+  // The engine never marks a team eliminated: « Reprise demain » (and its email fallback)
+  // goes only to the teams still in a bracket, read from the matches.
+  it("pause without B: teams already out of the tournament do not get « Reprise demain »", () => {
     const s = tournament(16, 8, { pause: { before: { remaining: 4 } } });
     const run = runner(s);
     const events: NotifyEvent[] = [];
@@ -405,5 +404,22 @@ describe("B4 — cases checked by the tester", () => {
     expect(out).toHaveLength(12);
     expect(paused.teamIds).toHaveLength(4);
     expect(paused.teamIds.filter((id) => out.includes(id))).toEqual([]);
+  });
+
+  it("pause with a B on « opt_in »: « Reprise demain » for the teams still in the A and the losers entered in the B, not the others", () => {
+    const s = tournament(16, 8, { consolation: { ...withB.consolation, entry: "opt_in" }, pause: { afterRound: 1 } });
+    const run = runner(s);
+    const entered = Object.values(s.teams).slice(0, 6).map((t) => t.id);
+    for (const id of entered) run({ type: "team.enterBracket", teamId: id, bracket: "consolation", enter: true }, `in-${id}`);
+    const events: NotifyEvent[] = [];
+    const r1 = run({ type: "round.draw", bracket: "main", seed: "x" }, "draw");
+    const after = playAll(r1.state, run, events, "s");
+    const ms = Object.values(after.matches).filter((x) => x.status === "done");
+    const winners = ms.flatMap((x) => ((x.scoreA ?? 0) > (x.scoreB ?? 0) ? x.sideA : x.sideB));
+    const losers = ms.flatMap((x) => ((x.scoreA ?? 0) > (x.scoreB ?? 0) ? x.sideB : x.sideA));
+    const paused = events.find((e) => e.kind === "paused")!;
+    const expected = [...winners, ...losers.filter((id) => entered.includes(id))];
+    expect(losers.some((id) => !entered.includes(id))).toBe(true);
+    expect([...paused.teamIds].sort()).toEqual(expected.sort());
   });
 });

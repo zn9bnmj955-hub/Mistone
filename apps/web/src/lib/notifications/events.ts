@@ -1,4 +1,21 @@
-import { isOfficeBye, pausedAt, type Bracket, type Change, type EngineState, type Match, type Round, type Team } from "@orgasport/engine";
+import {
+  consolationEntrants,
+  isBracketEnabled,
+  isOfficeBye,
+  loserTeams,
+  matchesOfRound,
+  pausedAt,
+  qualifiers,
+  roundsOf,
+  type Bracket,
+  type Change,
+  type EngineState,
+  type ExtraBracket,
+  type Match,
+  type Phase,
+  type Round,
+  type Team,
+} from "@orgasport/engine";
 
 /**
  * What deserves a notification, read from the changes the draw engine just
@@ -19,6 +36,41 @@ export type NotifyEvent =
 const DONE = new Set(["done", "forfeit"]);
 
 const teamsOf = (m: Match) => [...m.sideA, ...m.sideB];
+const ACTIVE = new Set(["registered", "checked_in"]);
+
+/**
+ * Teams still in at least one bracket (A, B or C), read from the engine state:
+ * the engine never marks a team eliminated. In a knockout bracket a team is out
+ * once it lost a match there; a B or a C not drawn yet counts the teams that
+ * will enter it (with « opt_in », only those entered). Other formats (swiss,
+ * championnat, mêlée) keep every team until the end.
+ */
+function teamsStillIn(state: EngineState): Set<string> {
+  const active = Object.values(state.teams).filter((t) => ACTIVE.has(t.status)).map((t) => t.id);
+  const format = state.tournament.config.format;
+  if (format !== "single_elimination" && format !== "pools_then_bracket") return new Set(active);
+  const inBracket = (bracket: Bracket, phase: Phase): string[] | null => {
+    const ms = roundsOf(state, bracket, phase).flatMap((r) => matchesOfRound(state, r.id));
+    if (!ms.length) return null;
+    const lost = new Set(ms.flatMap(loserTeams));
+    return ms.flatMap(teamsOf).filter((id) => !lost.has(id));
+  };
+  const entrants = (bracket: ExtraBracket): string[] => {
+    try {
+      return consolationEntrants(state, bracket).map((t) => t.id);
+    } catch {
+      return []; // not known yet (round still to play) or C not played
+    }
+  };
+  // With pools, the A goes on with the final phase, or with the qualifiers before it.
+  const ids = new Set(inBracket("main", format === "pools_then_bracket" ? "final" : "elimination") ?? qualifiers(state).map((q) => q.id));
+  for (const bracket of ["consolation", "consolation_c"] as const) {
+    if (!isBracketEnabled(state, bracket)) continue;
+    for (const id of inBracket(bracket, "elimination") ?? entrants(bracket)) ids.add(id);
+  }
+  return new Set(active.filter((id) => ids.has(id)));
+}
+
 const sidesKey = (m: Pick<Match, "sideA" | "sideB">) => `${m.sideA.join("+")}/${m.sideB.join("+")}`;
 
 /**
@@ -92,9 +144,8 @@ export function eventsFromChanges(changes: Change[], after: EngineState): Notify
   // names the held round.
   const pause = mainRoundOver ? pausedAt(after) : null;
   if (pause) {
-    const teamIds = Object.values(after.teams)
-      .filter((t) => t.status === "checked_in" || t.status === "registered")
-      .map((t) => t.id);
+    // Only the teams still in a bracket: the others have nothing to resume.
+    const teamIds = [...teamsStillIn(after)];
     if (teamIds.length) push({ kind: "paused", key: `pause:${pause.phase}:${pause.round}`, teamIds });
   }
   return out;
