@@ -665,20 +665,19 @@ function pausePending(state: EngineState): boolean {
 
 /**
  * True when the A's round before the pause has already been played to the end
- * once: every match of it has a result, except matches reopened since (a
- * reopened match keeps the moment it started but waits for a pitch again,
- * which a match never played never does), and at least one was reopened.
- * The pause was reached; only a correction made it pending again. Derived
- * from the state, nothing stored. Call only when pausePending is true.
+ * once and a match of it was reopened since: match.reopen records it on the
+ * round (status « live » = played to the end once, not complete any more), so
+ * it holds whatever happens to the match next (pitch, start, flag), and a match
+ * that was never finished never makes it true. With pools, every match is
+ * finished or in such a round. Call only when pausePending is true.
  */
 function pauseReachedBefore(state: EngineState): boolean {
   const format = state.tournament.config.format;
   const phase: Phase = state.tournament.config.pause === "afterPools" ? "pool"
     : format === "pools_then_bracket" ? "final" : format === "swiss" ? "swiss" : format === "melee_rotation" ? "melee" : "elimination";
   const rounds = phase === "pool" ? roundsOf(state, "main", "pool") : [lastRound(state, "main", phase)!];
-  const ms = rounds.flatMap((r) => matchesOfRound(state, r.id));
-  const reopened = (m: Match) => !isFinished(m) && m.startedAt !== null && (m.status === "waiting_venue" || m.status === "ready");
-  return ms.some(reopened) && ms.every((m) => isFinished(m) || reopened(m));
+  const reopened = new Set(rounds.filter((r) => r.status === "live").map((r) => r.id));
+  return reopened.size > 0 && rounds.every((r) => reopened.has(r.id) || matchesOfRound(state, r.id).every(isFinished));
 }
 
 /**

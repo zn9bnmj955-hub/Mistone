@@ -79,9 +79,8 @@ describe("pause de 2 jours — corrections de nuit, cas limites (testeur, daf6d7
     expect(counts(s)).toEqual(d.held);
   });
 
-  // Écart : un match rouvert puis relancé (« playing ») n'est plus reconnu comme rouvert ; la règle de secours
-  // (« tirage déjà possible avant l'action ») ne tient pas quand le B est lui-même corrigé (rouvert puis ressaisi).
-  it.fails("un match du A rouvert puis relancé (en cours) la nuit, puis une correction du B : le B et le C restent tenus", () => {
+  // Corrigé : la réouverture est enregistrée sur le tour (statut « live »), elle tient même si le match est relancé.
+  it("un match du A rouvert puis relancé (en cours) la nuit, puis une correction du B : le B et le C restent tenus", () => {
     const d = dayOne();
     const aM = lastMatchOf(d.s, "main", (x) => x.status === "done");
     let s = exec(d.s, { type: "match.reopen", matchId: aM.id });
@@ -93,7 +92,7 @@ describe("pause de 2 jours — corrections de nuit, cas limites (testeur, daf6d7
 
   // Même écart quand le match rouvert du A est marqué « à vérifier » (ou « score envoyé » par un capitaine).
   for (const flag of ["disputed", "score_submitted"] as const) {
-    it.fails(`un match du A rouvert puis signalé « ${flag} » la nuit, puis une correction du B : le B et le C restent tenus`, () => {
+    it(`un match du A rouvert puis signalé « ${flag} » la nuit, puis une correction du B : le B et le C restent tenus`, () => {
       const d = dayOne();
       const aM = lastMatchOf(d.s, "main", (x) => x.status === "done");
       let s = exec(d.s, { type: "match.reopen", matchId: aM.id });
@@ -199,13 +198,29 @@ describe("pause de 2 jours — jour 1, avant que la pause soit atteinte (testeur
     expect(after.b).toBe(before.b + 1);
   });
 
-  // Écart : un match lancé puis signalé « à vérifier » et remis en état (clear) garde son heure de début et revient
-  // « prêt » ; il ressemble à un match rouvert, la pause est crue atteinte alors que ce tour n'a jamais été fini.
-  it.fails("match du A lancé, signalé « à vérifier » puis remis (clear) : le B tire quand même son 2e tour", () => {
+  // Corrigé : un match lancé, signalé « à vérifier » puis remis (clear) garde son heure de début, mais son tour n'a
+  // jamais été fini (pas de statut « live ») : la pause n'est pas crue atteinte.
+  it("match du A lancé, signalé « à vérifier » puis remis (clear) : le B tire quand même son 2e tour", () => {
     const { before, after } = scenario((s, aM) => {
       s = exec(s, { type: "match.start", matchId: aM.id });
       s = exec(s, { type: "match.setFlag", matchId: aM.id, flag: "disputed" });
       return exec(s, { type: "match.setFlag", matchId: aM.id, flag: "clear" });
+    });
+    expect(after.b).toBe(before.b + 1);
+  });
+
+  it("match du A lancé puis renvoyé en file (son terrain donné à un autre match) : le B tire quand même son 2e tour", () => {
+    const { before, after } = scenario((s, aM) => {
+      s = exec(s, { type: "match.start", matchId: aM.id });
+      const venueId = s.matches[aM.id]!.venueId;
+      // Tous les autres terrains deviennent indisponibles : un match prêt retourne en file, puis la table lui donne celui de aM.
+      for (const v of Object.values(s.venues)) if (v.id !== venueId) s = exec(s, { type: "venue.update", venueId: v.id, available: false });
+      const other = Object.values(s.matches).find((x) => x.id !== aM.id && x.status === "waiting_venue");
+      expect(venueId && other).toBeTruthy();
+      s = exec(s, { type: "match.setVenue", matchId: other!.id, venueId: venueId! });
+      expect(s.matches[aM.id]!.status).toBe("waiting_venue");
+      expect(s.matches[aM.id]!.startedAt).not.toBeNull();
+      return s;
     });
     expect(after.b).toBe(before.b + 1);
   });

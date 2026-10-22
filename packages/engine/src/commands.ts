@@ -455,6 +455,9 @@ function run(tx: Transaction, cmd: Command, ctx: DrawContext): void {
         scheduledAt: null,
         queuedAt: m.queuedAt ?? ctx.now,
       });
+      // A round played to the end, reopened since: « live » (shown like « drawn »). Recorded, so the
+      // two-day pause knows it was reached whatever happens to the match next (started, flagged…).
+      if (round.status === "finished") tx.update("round", round.id, { status: "live" });
       return;
     }
     case "match.setFlag": {
