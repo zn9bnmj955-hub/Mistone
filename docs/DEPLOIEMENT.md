@@ -152,7 +152,8 @@ En production, l'inscription en ligne aux concours est **refusée** tant que ces
 
 ## Étape 8 — Les tâches automatiques (chaque minute)
 
-Tirages à l'heure prévue, rappels et envoi des notifications passent par l'adresse
+Tirages à l'heure prévue, rappels, envoi des notifications et **clôture définitive des concours
+24 h après leur finale** (s'ils n'ont pas été clos à la main) passent par l'adresse
 `/api/cron/tick`, à appeler chaque minute. Le plus simple : Supabase s'en charge.
 
 1. Supabase > **Database > Extensions** : activez `pg_cron` et `pg_net`.
@@ -183,9 +184,13 @@ Tirages à l'heure prévue, rappels et envoi des notifications passent par l'adr
      );
    $$);
    ```
-   La suppression des données personnelles (noms, contacts, codes d'équipe, PIN, historique) des
-   concours clos depuis plus de 14 jours tourne une fois par jour, directement dans la base
-   (la tâche de chaque minute la lance aussi, par sécurité ; elle ne fait rien deux fois) :
+   La suppression des données personnelles (noms, contacts, codes d'équipe, PIN, historique,
+   notifications et abonnements) tourne une fois par jour, directement dans la base
+   (la tâche de chaque minute la lance aussi, par sécurité ; elle ne fait rien deux fois). Elle concerne :
+   - les concours clos depuis plus de **14 jours** après leur finale ;
+   - en filet de sécurité, tout concours publié dont la date de début remonte à plus de **6 mois**, même jamais
+     terminé ni clos (il est alors clos d'office) : c'est la promesse affichée sur le formulaire d'inscription
+     (« contacts et licences conservés au plus 6 mois »).
    ```sql
    select cron.schedule('orgasport-purge', '23 3 * * *', $$ select public.purge_finished_tournaments(); $$);
    ```
@@ -193,7 +198,11 @@ Tirages à l'heure prévue, rappels et envoi des notifications passent par l'adr
    affiche alors « Résultats supprimés ».
 3. Vérification au bout de 2 minutes :
    `select status_code, content from net._http_response order by created desc limit 3;`
-   doit afficher `200` et `{"drawn":…}`.
+   doit afficher `200` et `{"drawn":…` (la réponse contient aussi `closed` et `purged` : codes des concours clos ou vidés à ce passage).
+   Les trois tâches doivent apparaître (actives) dans : `select jobname, schedule, active from cron.job;`
+   et la purge doit avoir tourné sans erreur le lendemain :
+   `select status, return_message from cron.job_run_details where jobid = (select jobid from cron.job where jobname = 'orgasport-purge') order by start_time desc limit 1;`
+   → `succeeded`.
 
 Pour les arrêter : `select cron.unschedule('orgasport-tick');`, `select cron.unschedule('orgasport-news');` et `select cron.unschedule('orgasport-purge');`
 
@@ -231,6 +240,14 @@ Pour les arrêter : `select cron.unschedule('orgasport-tick');`, `select cron.un
          → jamais `hit`, et `Cache-Control: no-store`.
       Si le 2ᵉ appel renvoie `hit` : supprimer le cache de 4 s (`s-maxage`) dans
       `apps/web/src/terrain/cache-headers.ts` et redéployer.
+- [ ] Fichier « Enregistrer pour hors ligne » derrière Netlify : ses liens doivent pointer vers votre domaine
+      (l'adresse est prise de la requête reçue par le site, et Netlify pourrait transmettre son adresse interne
+      ou `….netlify.app`). Dans un terminal, avec un concours publié :
+      `curl -s "https://votre-domaine.fr/c/CODE?enregistrer=1" | grep -o 'href="[^"]*"' | sort -u | head`
+      → toutes les adresses commencent par `https://votre-domaine.fr/`. Sinon, prévenez le développeur
+      (il faudra prendre `NEXT_PUBLIC_SITE_URL` comme origine du fichier).
+- [ ] Assistant : ouvrez `/admin/assistant` et relisez les fiches d'aide **sans date** de mise à jour
+      (voir « Mettre à jour le site ensuite ») ainsi que les fiches de règlement signalées « non relues depuis 12 mois ».
 - [ ] Refaire la mesure de charge avec 2 000 téléphones sur un concours de 512 équipes
       (`/c/CODE?fragment=1`, 2 000 requêtes simultanées, attente médiane et maximale) sur le site en ligne :
       avant correction, en local, la médiane était de 5,1 s et le maximum de 18,9 s. Objectif : médiane < 2 s,
