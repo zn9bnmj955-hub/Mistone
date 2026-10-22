@@ -111,7 +111,7 @@ export function toolDefinitions(): Anthropic.Tool[] {
     {
       name: "knowledge_search",
       description:
-        "Cherche dans la base de connaissances OrgaSport : fiches de règlement (résumé du règlement officiel, avec sa source et sa date) et fiches d'aide du site (fonctions, inscription, lien concours, table de marque, PIN des bénévoles, cadrage et Office, N.H., concours B et C, 2 jours, clôture et suppression des résultats). À utiliser AVANT tes connaissances générales pour toute question de règle ou d'utilisation du site. Un résultat de règlement porte un champ « cite » : reprends-le tel quel dans ta réponse. Une fiche d'aide porte un champ « updated » (date de sa mise à jour), à donner si on te demande si l'information est récente.",
+        "Cherche dans la base de connaissances OrgaSport : fiches de règlement (résumé du règlement officiel, avec sa source et sa date) et fiches d'aide du site (fonctions, inscription, lien concours, table de marque, PIN des bénévoles, cadrage et Office, N.H., concours B et C, 2 jours, clôture et suppression des résultats, pointage, forfaits, exempts et liste d'attente, saisie des scores par les capitaines). À utiliser AVANT tes connaissances générales pour toute question de règle ou d'utilisation du site. Un résultat de règlement porte un champ « cite » : reprends-le tel quel dans ta réponse. Une fiche d'aide porte un champ « updated » (date de sa mise à jour), à donner si on te demande si l'information est récente.",
       input_schema: {
         type: "object",
         properties: { query: { type: "string" }, sport: { type: "string", enum: sports } },

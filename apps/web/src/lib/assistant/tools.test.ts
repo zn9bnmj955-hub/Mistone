@@ -100,4 +100,10 @@ describe("assistant: dated knowledge base (A2)", () => {
     expect(systemPrompt()).toContain("Règlement en vigueur au");
     expect(toolDefinitions().find((t) => t.name === "knowledge_search")?.description).toMatch(/PIN.*cadrage/);
   });
+
+  it("names every help topic in the search tool, the newest sheets included", () => {
+    const description = toolDefinitions().find((t) => t.name === "knowledge_search")?.description ?? "";
+    expect(description).toMatch(/pointage, forfaits, exempts et liste d'attente/);
+    expect(description).toMatch(/saisie des scores par les capitaines/);
+  });
 });
