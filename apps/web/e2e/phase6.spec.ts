@@ -64,6 +64,8 @@ test.describe("assistant", () => {
       return conversation.getByRole("listitem").last();
     };
     const cadrage = await ask("Qu'est-ce que le cadrage ?");
+    // It never passes itself off as the AI: it says the assistant is not on yet.
+    await expect(cadrage).toContainText("L'assistant intelligent n'est pas encore activé sur ce site.");
     await expect(cadrage).toContainText("Aide OrgaSport : le cadrage et les qualifiés d'office (Office)");
     await expect(cadrage).toContainText(/qualifiée d'office/);
     const pin = await ask("Comment marche le PIN des bénévoles ?");
