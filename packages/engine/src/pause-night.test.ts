@@ -321,3 +321,40 @@ describe("pause de 2 jours — marqueur « tour rouvert » (statut live) après 
     expect(isPauseHeld(s)).toBe(true);
   });
 });
+
+describe("pause de 2 jours — poules et pause « avant R équipes » qui tombe juste après les poules (testeur)", () => {
+  // 12 équipes en poules, 6 qualifiés ≤ 16 : la pause « avant 16 » tient avant la phase finale, comme « afterPools ».
+  const cfg: TestConfig = { format: "pools_then_bracket", bracketMode: "redraw", pause: { before: { remaining: 16 } } };
+
+  function nightReopen() {
+    let s = exec(makeState({ teams: 12, config: cfg }), { type: "round.draw", bracket: "main", seed: "pr" });
+    s = playAll(s);
+    expect(pausedAt(s)?.phase).toBe("final");
+    expect(roundsOf(s, "main", "final")).toHaveLength(0);
+    const pool = Object.values(s.matches).filter((m) => s.rounds[m.roundId]!.phase === "pool" && m.status === "done" && m.sideB.length > 0);
+    for (const m of pool) {
+      try {
+        return { s: exec(s, { type: "match.reopen", matchId: m.id }), m };
+      } catch {
+        /* construit dessus : suivant */
+      }
+    }
+    throw new Error("aucun match de poule rouvrable");
+  }
+
+  it("un match de poule rouvert la nuit puis ressaisi : rien n'est tiré, la pause revient", () => {
+    const { s: night, m } = nightReopen();
+    expect(roundsOf(night, "main", "final")).toHaveLength(0);
+    const s = exec(night, { type: "match.score", matchId: m.id, scoreA: 13, scoreB: 9 });
+    expect(roundsOf(s, "main", "final")).toHaveLength(0);
+    expect(pausedAt(s)?.phase).toBe("final");
+  });
+
+  // Écart (table de marque) : pausePending ne connaît la fin des poules que pour « afterPools » ; avec « avant 16 »
+  // qui tombe au même endroit, isPauseHeld est faux pendant la réouverture : le bandeau « Concours en pause »
+  // disparaît la nuit (aucun tirage n'est possible pour autant). Trouvé par le test aléatoire (graine 63 de M8).
+  it.fails("pendant la réouverture de nuit d'un match de poule, isPauseHeld reste vrai (bandeau « Concours en pause »)", () => {
+    const { s } = nightReopen();
+    expect(isPauseHeld(s)).toBe(true);
+  });
+});
