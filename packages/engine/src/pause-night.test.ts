@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { applyCommand } from "./commands";
-import { canDrawNext, pausedAt } from "./formats";
+import { canDrawNext, isPauseHeld, pausedAt } from "./formats";
 import { roundsOf } from "./queries";
 import { createIdGenerator } from "./rng";
 import { exec, makeState, PLAYABLE_STATUSES, resetOps, type TestConfig } from "./test-helpers";
@@ -223,5 +223,101 @@ describe("pause de 2 jours — jour 1, avant que la pause soit atteinte (testeur
       return s;
     });
     expect(after.b).toBe(before.b + 1);
+  });
+});
+
+describe("pause de 2 jours — marqueur « tour rouvert » (statut live) après 22ea23e (testeur)", () => {
+  const mainLastRound = (s: EngineState) => roundsOf(s, "main").at(-1)!;
+
+  it("annuler la réouverture remet le tour du A « finished » et la pause ; refaire la réouverture le remet « live »", () => {
+    const d = dayOne();
+    const aM = lastMatchOf(d.s, "main", (x) => x.status === "done");
+    const r = applyCommand(d.s, { type: "match.reopen", matchId: aM.id }, { now: "2026-10-12T23:00:00.000Z", newId: createIdGenerator("u") });
+    expect(mainLastRound(r.state).status).toBe("live");
+    expect(isPauseHeld(r.state)).toBe(true);
+    const back = applyChanges(r.state, invertChanges(r.changes));
+    expect(mainLastRound(back).status).toBe("finished");
+    expect(isPauseHeld(back)).toBe(true);
+    expect(pausedAt(back)).not.toBeNull();
+  });
+
+  it("deux matchs du même tour rouverts la nuit : le tour reste « live » tant que l'un des deux attend, le B et le C restent tenus, puis la pause revient", () => {
+    const d = dayOne();
+    const [m1, m2] = Object.values(d.s.matches).filter((x) => x.roundId === mainLastRound(d.s).id && x.status === "done" && x.sideB.length > 0);
+    let s = exec(d.s, { type: "match.reopen", matchId: m1!.id });
+    s = exec(s, { type: "match.reopen", matchId: m2!.id });
+    expect(mainLastRound(s).status).toBe("live");
+    s = exec(s, { type: "match.score", matchId: m1!.id, scoreA: 13, scoreB: 2 });
+    expect(mainLastRound(s).status).toBe("live");
+    expect(isPauseHeld(s)).toBe(true);
+    s = exec(s, { type: "match.start", matchId: m2!.id });
+    s = correctB(s);
+    expect(counts(s)).toEqual(d.held);
+    const r = applyCommand(s, { type: "match.score", matchId: m2!.id, scoreA: 4, scoreB: 13 }, { now: "2026-10-12T23:50:00.000Z", newId: createIdGenerator("m2") });
+    expect(mainLastRound(r.state).status).toBe("finished");
+    expect(pausedAt(r.state)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    expect(counts(r.state)).toEqual(d.held);
+    // Annuler la dernière saisie : de nouveau « live », toujours tenu.
+    const back = applyChanges(r.state, invertChanges(r.changes));
+    expect(mainLastRound(back).status).toBe("live");
+    expect(isPauseHeld(back)).toBe(true);
+  });
+
+  it("un tour plus ancien du A ne peut pas être rouvert la nuit (le tour suivant est construit dessus) : rien ne change", () => {
+    const d = dayOne();
+    const first = roundsOf(d.s, "main")[0]!;
+    const old = Object.values(d.s.matches).find((x) => x.roundId === first.id && x.status === "done" && x.sideB.length > 0)!;
+    expect(() => exec(d.s, { type: "match.reopen", matchId: old.id })).toThrow();
+    expect(first.status).toBe("finished");
+  });
+
+  it("le jour 1, un match rouvert dans le tour courant (pas encore fini) ne met pas le tour « live » : le B continue", () => {
+    let s = exec(makeState({ teams: 64, config: { ...ABC, pause: { before: { remaining: 16 } } } }), { type: "round.draw", bracket: "main", seed: "d1" });
+    for (let i = 0; i < 200 && count(s, "main") < 2; i++) {
+      const m = Object.values(s.matches).find((x) => PLAYABLE_STATUSES.has(x.status) && s.rounds[x.roundId]!.bracket === "main")!;
+      s = exec(s, { type: "match.score", matchId: m.id, scoreA: 13, scoreB: 5 });
+    }
+    const aM = lastMatchOf(s, "main", (x) => PLAYABLE_STATUSES.has(x.status));
+    s = exec(s, { type: "match.score", matchId: aM.id, scoreA: 13, scoreB: 5 });
+    s = exec(s, { type: "match.reopen", matchId: aM.id });
+    expect(mainLastRound(s).status).toBe("drawn");
+    expect(isPauseHeld(s)).toBe(false);
+  });
+
+  it("afterPools : un match de poule rouvert la nuit met sa poule « live », la pause tient (isPauseHeld) ; l'annulation remet « finished »", () => {
+    const cfg: TestConfig = { format: "pools_then_bracket", bracketMode: "redraw", consolation: { enabled: true, entry: "auto", source: "pool_non_qualified" }, pause: "afterPools" };
+    let s = exec(makeState({ teams: 16, config: cfg }), { type: "round.draw", bracket: "main", seed: "p" });
+    s = playAll(s);
+    expect(pausedAt(s)?.phase).toBe("final");
+    let r: ReturnType<typeof applyCommand> | null = null;
+    for (const m of Object.values(s.matches).filter((x) => s.rounds[x.roundId]!.phase === "pool" && x.status === "done" && x.sideB.length > 0)) {
+      try {
+        r = applyCommand(s, { type: "match.reopen", matchId: m.id }, { now: "2026-10-12T23:00:00.000Z", newId: createIdGenerator("pp") });
+        break;
+      } catch {
+        /* construit dessus : suivant */
+      }
+    }
+    expect(r).not.toBeNull();
+    const reopened = Object.values(r!.state.rounds).filter((x) => x.status === "live");
+    expect(reopened).toHaveLength(1);
+    expect(reopened[0]!.phase).toBe("pool");
+    expect(pausedAt(r!.state)).toBeNull();
+    expect(isPauseHeld(r!.state)).toBe(true);
+    const back = applyChanges(r!.state, invertChanges(r!.changes));
+    expect(Object.values(back.rounds).some((x) => x.status === "live")).toBe(false);
+    expect(back).toEqual(s);
+  });
+
+  it("suisse, pause après la 2e partie : un match de la 1re partie rouvert la nuit garde la pause (isPauseHeld)", () => {
+    let s = exec(makeState({ teams: 16, config: { format: "swiss", pause: { afterRound: 2 } } }), { type: "round.draw", bracket: "main", seed: "sw" });
+    s = playAll(s);
+    expect(pausedAt(s)?.round).toBe(3);
+    const r1 = roundsOf(s, "main")[0]!;
+    const old = Object.values(s.matches).find((x) => x.roundId === r1.id && x.status === "done" && x.sideB.length > 0)!;
+    s = exec(s, { type: "match.reopen", matchId: old.id });
+    expect(s.rounds[r1.id]!.status).toBe("live");
+    expect(roundsOf(s, "main")).toHaveLength(2);
+    expect(isPauseHeld(s)).toBe(true);
   });
 });
