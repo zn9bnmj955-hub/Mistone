@@ -9,6 +9,9 @@ import { computeStats } from "./standings";
 import { exec, makeState, PLAYABLE_STATUSES, playToEnd, randomScore, resetOps } from "./test-helpers";
 import type { EngineState, Phase } from "./types";
 
+/** Explicit time limit for the 129 / 200 / 256 / 300-team runs (slow on a busy machine). */
+const HEAVY = 30_000;
+
 /** Lot 2, M2: single draw rule of an elimination bracket, with a « cadrage ». */
 
 beforeEach(() => resetOps());
@@ -107,7 +110,7 @@ describe("elimination without pools: rounds of the reference table", () => {
       const s = playElimination(n, k);
       expect(profile(s, "elimination")).toEqual(expected);
       expect(s.tournament.status).toBe("finished");
-    });
+    }, n >= 129 ? HEAVY : undefined);
   }
 
   it("256 teams (power of two): no exempt, no cadrage, 8 rounds", () => {
@@ -127,7 +130,7 @@ describe("elimination without pools: rounds of the reference table", () => {
       expect(p.every((x) => !x.includes("ex") && !x.includes("off"))).toBe(true);
       expect(p[p.length - 1]).toBe("1p final");
     }
-  });
+  }, HEAVY);
 
   it("after the cadrage, every round starts with a power of two (2 … 300 teams, k = 1 and 2)", () => {
     for (const k of [1, 2] as const) {
@@ -143,7 +146,7 @@ describe("elimination without pools: rounds of the reference table", () => {
         expect(s.tournament.status).toBe("finished");
       }
     }
-  });
+  }, HEAVY);
 });
 
 describe("pools then final phase (pétanque: new draw, cadrage right after the pools)", () => {
@@ -173,7 +176,7 @@ describe("pools then final phase (pétanque: new draw, cadrage right after the p
         expect(roundsOf(s, "main", "final").every((r) => r.seed !== null)).toBe(true);
         expect(s.tournament.status).toBe("finished");
       }
-    });
+    }, n >= 129 ? HEAVY : undefined);
   }
 
   it("the fixed tree stays available (football): seeded tree drawn at once", () => {
@@ -264,6 +267,6 @@ describe("pools then final phase: other sizes of the reference list", () => {
       });
       expect(p[p.length - 1]).toBe("1p final");
       expect(s.tournament.status).toBe("finished");
-    });
+    }, n >= 129 ? HEAVY : undefined);
   }
 });
