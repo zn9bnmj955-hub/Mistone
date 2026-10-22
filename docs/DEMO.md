@@ -38,6 +38,16 @@ puis ce que gagne un **club** (tout est automatique), et finir par l'effet « wa
 | `2J7P` | Concours sur **2 jours**, en pause après le cadrage : la reprise commence aux 1/4 de finale (le B attend aussi). |
 | `PQ8P` | À venir, en poules (8 triplettes) : sert au test du tirage automatique à l'heure. |
 
+## Pour aller plus loin (questions fréquentes des clubs)
+
+| Écran | Ce qu'on montre |
+|---|---|
+| http://localhost:3000/c/7KQ2, bouton « Enregistrer pour hors ligne » | Un fichier de la page à garder sur l'ordinateur de la table : il s'ouvre sans réseau (copie datée). |
+| http://localhost:3000/c/7KQ2/equipes | « Résultats par équipes » : chaque équipe avec son club « (n°/CLUB) » ou « (N.H.) ». |
+| Table de marque de `GP3M` connecté en `club@demo.orgasport.fr`, onglet « Accès » | Créer un PIN (« Créer le PIN de la table » s'il n'y en a pas encore), puis « Imprimer la fiche à donner » : QR code et PIN en grand pour le bénévole. Retirer ce PIN ensuite. |
+| Table de marque de `2J7P` (connecté en club) | Bandeau « Concours en pause » ; « Reprendre le concours » tire les 1/4 de finale (et relance le B). |
+| Table de marque de `C4DR` ou `TR8E` | Concours terminé : on peut encore corriger un score ; « Clore définitivement… » ferme le lien pour de bon (à ne faire qu'en fin de démo : il faut ensuite `pnpm db:reset`). |
+
 ## Bon à savoir pendant la démo
 
 - **Paiement** : en démo, une page « paiement simulé » remplace Stripe (aucune vraie carte).
@@ -45,4 +55,8 @@ puis ce que gagne un **club** (tout est automatique), et finir par l'effet « wa
 - **Notifications sur téléphone** : elles demandent l'autorisation seulement au clic sur « Me prévenir » ; la vraie
   réception se montre une fois le site en ligne (voir `docs/DEPLOIEMENT.md`).
 - **Mode sombre** : suit le réglage du téléphone ou de l'ordinateur.
+- **Clôture et suppression** : en vrai, un concours se clôt tout seul 24 h après la finale et ses données personnelles
+  sont effacées 14 jours plus tard (« Résultats supprimés »). Les concours terminés de la démo n'ont pas de date de
+  finale enregistrée : ils restent corrigeables et ne sont jamais effacés.
+- **Football** : désactivé (pétanque seule) ; il se réactive par un simple réglage (voir `CLAUDE.md`).
 - **Boule 3D** : sur un appareil peu puissant ou avec « réduire les animations », une image fixe la remplace (voulu).
