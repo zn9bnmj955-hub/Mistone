@@ -24,12 +24,17 @@ const sidesKey = (m: Pick<Match, "sideA" | "sideB">) => `${m.sideA.join("+")}/${
 /**
  * « À vous » once per match, venue and opponents. A match that is only
  * placed again (same venue, same teams: reopened, flag cleared, start
- * undone, queue order or time changed) notifies nobody; a move to another
- * venue or a new opponent does.
+ * undone, queue order or time changed, or reopened after its result) notifies
+ * nobody; a move of a match not played yet to another venue, or a new
+ * opponent, does.
  */
 function calledAgain(m: Match, before: Partial<Match> | null): boolean {
   // An update carries only the fields it changed.
   if (!before) return true;
+  // Reopened (result removed, teams already played it): a correction, even if
+  // the engine had to put it on another venue (its own was taken meanwhile,
+  // e.g. during the night of a two-day tournament).
+  if ("status" in before && DONE.has(before.status ?? "")) return false;
   if ("venueId" in before && before.venueId !== m.venueId) return true;
   if (!("sideA" in before) && !("sideB" in before)) return false;
   return sidesKey({ sideA: before.sideA ?? m.sideA, sideB: before.sideB ?? m.sideB }) !== sidesKey(m);

@@ -228,6 +228,52 @@ describe("cadrage, Office, B/C and pause", () => {
     expect(second.map((e) => e.key)).toEqual(first.map((e) => e.key));
   });
 
+  for (const order of ["A puis B", "B puis A"] as const) {
+    it(`pause reached, an A match and a B match reopened during the night (${order}) then scored again: no draw announced, « Reprise demain » keeps its key, the resume announces the draws`, () => {
+      const s = tournament(16, 8, {
+        consolation: { enabled: true, source: "losers_round_1", entry: "auto", feeCents: null, losersOfRound: 1 },
+        consolationC: { enabled: true, entry: "auto", feeCents: null },
+        pause: { before: { remaining: 4 } },
+      });
+      const run = runner(s);
+      const day1: NotifyEvent[] = [];
+      const r1 = run({ type: "round.draw", bracket: "main", seed: "x" }, "draw");
+      const evening = playAll(r1.state, run, day1, "s");
+      const pauseKeys = day1.filter((e) => e.kind === "paused").map((e) => e.key);
+      expect(pauseKeys).toEqual(["pause:elimination:3"]);
+      const lastDone = (bracket: string) => {
+        const rounds = Object.values(evening.rounds).filter((r) => r.bracket === bracket).sort((a, b) => a.number - b.number);
+        const last = rounds[rounds.length - 1]!;
+        return Object.values(evening.matches).find((x) => x.roundId === last.id && x.status === "done" && x.sideB.length > 0)!;
+      };
+      const aMatch = lastDone("main");
+      const bMatch = lastDone("consolation");
+      const night: NotifyEvent[] = [];
+      const step = (cmd: unknown, op: string) => {
+        const r = run(cmd, op);
+        night.push(...eventsFromChanges(r.changes, r.state));
+        return r;
+      };
+      const ids = order === "A puis B" ? [aMatch.id, bMatch.id] : [bMatch.id, aMatch.id];
+      ids.forEach((id, i) => step({ type: "match.reopen", matchId: id }, `re${i}`));
+      step({ type: "match.score", matchId: bMatch.id, scoreA: 13, scoreB: 11 }, "fixB");
+      step({ type: "match.score", matchId: aMatch.id, scoreA: 13, scoreB: 2 }, "fixA");
+      // Nothing is drawn during the night (engine M5), so nothing is announced as drawn; the reopened
+      // matches are corrections, never « À vous » (in « A puis B » the B match even lands on another venue).
+      expect(night.filter((e) => e.kind === "draw_published" || e.kind === "your_turn")).toEqual([]);
+      // Only the corrected scores, and at most the same « Reprise demain » key (one message in the queue).
+      expect(night.filter((e) => e.kind === "paused").every((e) => pauseKeys.includes(e.key))).toBe(true);
+      expect(night.every((e) => e.kind === "score_validated" || e.kind === "paused")).toBe(true);
+      const resume = run({ type: "tournament.resume", seed: "day2" }, "resume");
+      const morning = eventsFromChanges(resume.changes, resume.state);
+      const drawn = new Set(morning.filter((e): e is Extract<NotifyEvent, { kind: "draw_published" }> => e.kind === "draw_published").map((e) => resume.state.rounds[e.roundId]!.bracket));
+      expect(drawn.has("main")).toBe(true);
+      expect(morning.some((e) => e.kind === "paused")).toBe(false);
+      const keys = [...day1, ...night, ...morning].filter((e) => e.kind !== "paused").map((e) => e.key);
+      expect(new Set(keys).size).toBe(keys.length);
+    });
+  }
+
   it("a match only placed again (flag set then cleared, same venue and teams) notifies nobody; a venue move does", () => {
     const s = tournament(4, 3);
     const run = runner(s);
