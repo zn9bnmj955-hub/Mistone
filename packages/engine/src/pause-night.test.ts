@@ -350,10 +350,9 @@ describe("pause de 2 jours — poules et pause « avant R équipes » qui tombe 
     expect(pausedAt(s)?.phase).toBe("final");
   });
 
-  // Écart (table de marque) : pausePending ne connaît la fin des poules que pour « afterPools » ; avec « avant 16 »
-  // qui tombe au même endroit, isPauseHeld est faux pendant la réouverture : le bandeau « Concours en pause »
-  // disparaît la nuit (aucun tirage n'est possible pour autant). Trouvé par le test aléatoire (graine 63 de M8).
-  it.fails("pendant la réouverture de nuit d'un match de poule, isPauseHeld reste vrai (bandeau « Concours en pause »)", () => {
+  // Table de marque : avec « avant 16 » qui tombe juste après les poules (comme « afterPools »), le bandeau
+  // « Concours en pause » reste affiché pendant la réouverture de nuit. Trouvé par le test aléatoire (graine 63 de M8).
+  it("pendant la réouverture de nuit d'un match de poule, isPauseHeld reste vrai (bandeau « Concours en pause »)", () => {
     const { s } = nightReopen();
     expect(isPauseHeld(s)).toBe(true);
   });

@@ -16,7 +16,7 @@ import type { Bracket, EngineState, PauseRule } from "./types";
  * put on a pitch and scored again, and B or C results corrected; no round is drawn meanwhile except
  * by the resume or a manual draw.
  * Every action is undone once to prove the inverse restores the previous state exactly.
- * FUZZ_SEEDS overrides the number of seeds (1 500 by default, about 25 s).
+ * FUZZ_SEEDS overrides the number of seeds (1 500 by default, about 25 s; up to 2 000 is fine, e.g. FUZZ_SEEDS=2000).
  */
 
 const SEEDS = Number(process.env.FUZZ_SEEDS ?? 1500);
@@ -146,9 +146,7 @@ function play(seed: number) {
     if (cmd.type === "tournament.resume" || (cmd.type === "round.draw" && cmd.bracket === "main") || (resizes && !pausedAt(res.state))) paused = false;
     if (pausedAt(res.state)) paused = true;
     // The scoring table shows « Concours en pause » (isPauseHeld) while the pause holds, night corrections included.
-    // Known gap (it.fails in pause-night.test.ts): pools with a « before R teams » pause falling right after the pools.
-    const knownGap = sc.config.format === "pools_then_bracket" && sc.config.pause !== "afterPools" && roundsOf(res.state, "main", "final").length === 0;
-    if (paused && !knownGap && !isPauseHeld(res.state)) fail(`${sc.label} — ${cmd.type} (op ${op}): the pause holds but isPauseHeld is false`);
+    if (paused && !isPauseHeld(res.state)) fail(`${sc.label} — ${cmd.type} (op ${op}): the pause holds but isPauseHeld is false`);
     if (cmd.type === "match.reopen" && paused) seen.nightReopen++;
     seen.actions++;
     if (cmd.type === "match.forfeit" && cmd.side === "both") seen.doubleForfeit++;

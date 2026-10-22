@@ -644,10 +644,16 @@ function pausePending(state: EngineState): boolean {
   const rule = state.tournament.config.pause;
   if (rule === null) return false;
   const format = state.tournament.config.format;
-  if (rule === "afterPools") {
+  if (format === "pools_then_bracket" && roundsOf(state, "main", "pool").length > 0 && roundsOf(state, "main", "final").length === 0) {
+    // Pools played, final phase not drawn yet: the pause falls right after the pools with « afterPools », and with
+    // « before R teams » when the qualifiers still in are R or fewer (pausedAt then holds the 1st final round).
     // The B and the C of a pools tournament start from finished pools or the final phase: nothing to draw before.
-    return format === "pools_then_bracket" && roundsOf(state, "main", "pool").length > 0 && roundsOf(state, "main", "final").length === 0;
+    if (rule === "afterPools") return true;
+    if (!("before" in rule)) return false;
+    const teams = qualifiers(state).filter((x) => stillIn(state)(x.id)).length;
+    return teams >= 2 && teams <= rule.before.remaining;
   }
+  if (rule === "afterPools") return false;
   const phase: Phase =
     format === "pools_then_bracket" ? "final" : format === "swiss" ? "swiss" : format === "melee_rotation" ? "melee" : format === "round_robin" ? "league" : "elimination";
   const last = lastRound(state, "main", phase);
@@ -673,7 +679,8 @@ function pausePending(state: EngineState): boolean {
  */
 function pauseReachedBefore(state: EngineState): boolean {
   const format = state.tournament.config.format;
-  const phase: Phase = state.tournament.config.pause === "afterPools" ? "pool"
+  // pausePending is true before the final phase only when the pause falls right after the pools.
+  const phase: Phase = format === "pools_then_bracket" && roundsOf(state, "main", "final").length === 0 ? "pool"
     : format === "pools_then_bracket" ? "final" : format === "swiss" ? "swiss" : format === "melee_rotation" ? "melee" : "elimination";
   const rounds = phase === "pool" ? roundsOf(state, "main", "pool") : [lastRound(state, "main", phase)!];
   const reopened = new Set(rounds.filter((r) => r.status === "live").map((r) => r.id));
