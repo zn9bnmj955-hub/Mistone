@@ -3,7 +3,7 @@ import { canDrawNext, matchesOfRound, roundsOf, type EngineState } from "@orgasp
 import { requireSport } from "@orgasport/sports";
 import { getMessages } from "@/i18n";
 import { exec, makeState, PLAYABLE_STATUSES, playToEnd, resetOps } from "../../../../packages/engine/src/test-helpers";
-import { buildTeamViews, drawSheets, roundLabel, type DrawRow } from "./view-model";
+import { buildTeamViews, currentMatch, currentRounds, drawSheets, roundLabel, teamTimeline, type DrawRow } from "./view-model";
 
 /** Lot 2, T1: draw sheets like the federation results pages (« resultats-ppf »). */
 
@@ -158,5 +158,28 @@ describe("draw sheets (T1, vérification du testeur)", () => {
     expect(row.b!.lost).toBe(true);
     const f = s.tournament.config.forfeitScore;
     expect(row.score).toBe(`${f.winner} - ${f.loser}`);
+  });
+});
+
+describe("pause de 2 jours : tour du A rouvert la nuit (statut « live », M5)", () => {
+  it("le tour rouvert est le tour affiché, la partie rouverte montre « ** » et redevient le prochain match de ses équipes ; les autres gardent leur score", () => {
+    let s = withPlayers(makeState({ teams: 8, config: { bracketMode: "redraw", pause: { before: { remaining: 4 } } } }));
+    s = exec(s, { type: "round.draw", bracket: "main", seed: "p8" });
+    s = scoreAll(s, roundsOf(s, "main")[0]!.id);
+    const round = roundsOf(s, "main")[0]!;
+    expect(roundsOf(s, "main")).toHaveLength(1);
+    const reopened = matchesOfRound(s, round.id).find((x) => x.status === "done" && x.sideB.length > 0)!;
+    s = exec(s, { type: "match.reopen", matchId: reopened.id });
+    expect(s.rounds[round.id]!.status).toBe("live");
+    expect(currentRounds(s, "main").map((r) => r.id)).toEqual([round.id]);
+    const teams = buildTeamViews(s, "full", m);
+    const sheet = drawSheets(s, teams, petanque, m).find((b) => b.bracket === "main")!;
+    expect(sheet.rounds).toHaveLength(1);
+    const rows = sheet.rounds[0]!.rows;
+    expect(rows.find((r) => r.matchId === reopened.id)!.score).toBe(m.terrain.sheet.notPlayed);
+    expect(rows.filter((r) => r.matchId !== reopened.id && r.score === "13 - 5").length).toBe(rows.length - 1);
+    const now = currentMatch(teamTimeline(s, reopened.sideA[0]!));
+    expect(now?.match.id).toBe(reopened.id);
+    expect(now?.round.status).toBe("live");
   });
 });
