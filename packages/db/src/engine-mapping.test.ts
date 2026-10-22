@@ -124,4 +124,35 @@ describe("engine ↔ database mapping", () => {
     const db = toDbChanges([{ op: "update", entity: "player", id: p1.id, before: { lastName: p1.lastName }, after: { lastName: "Nouveau" } }], after, s.tournament.id);
     expect(db[0]!.values).toEqual({ last_name: "Nouveau" });
   });
+  it("a match reopened in a round played to the end: the round's « live » status is written alone and read back (two-day pause, M5)", () => {
+    let s = demoState();
+    let op = 0;
+    const run = (cmd: Parameters<typeof applyCommand>[1]) => applyCommand(s, cmd, { now: `2026-10-12T13:${String(op).padStart(2, "0")}:00.000Z`, newId: createIdGenerator(`r${++op}`), seed: `s${op}` });
+    s = run({ type: "round.draw", bracket: "main", seed: "x" }).state;
+    for (let i = 0; i < 40; i++) {
+      const m = Object.values(s.matches).find((x) => x.status === "ready" || x.status === "waiting_venue");
+      if (!m) break;
+      s = run({ type: "match.score", matchId: m.id, scoreA: 13, scoreB: 4 }).state;
+    }
+    expect(s.tournament.status).toBe("finished");
+    const final = Object.values(s.rounds).sort((a, b) => b.number - a.number)[0]!;
+    const m = Object.values(s.matches).find((x) => x.roundId === final.id && x.sideB.length > 0)!;
+    const res = run({ type: "match.reopen", matchId: m.id });
+    expect(res.state.rounds[final.id]!.status).toBe("live");
+    const db = toDbChanges(res.changes, res.state, s.tournament.id);
+    expect(db.find((c) => c.table === "rounds" && c.id === final.id)).toEqual({ table: "rounds", op: "update", key: "id", id: final.id, values: { status: "live" } });
+    const t = res.state;
+    const tid = t.tournament.id;
+    const rows = {
+      tournament: { id: tid, status: t.tournament.status, starts_at: t.tournament.startsAt, max_teams: 16 },
+      teams: Object.values(t.teams).map((e) => entityToRow("team", e as never, tid)),
+      players: Object.values(t.players).map((e) => entityToRow("player", e as never, tid)),
+      venues: Object.values(t.venues).map((e) => entityToRow("venue", e as never, tid)),
+      rounds: Object.values(t.rounds).map((e) => entityToRow("round", e as never, tid)),
+      matches: Object.values(t.matches).map((e) => entityToRow("match", e as never, tid)),
+      teamSecrets: Object.values(t.teamSecrets).map((e) => entityToRow("teamSecret", e as never, tid)),
+      registrations: [],
+    };
+    expect(rowsToEngineState(rows, t.rules, t.tournament.config).rounds[final.id]!.status).toBe("live");
+  });
 });
