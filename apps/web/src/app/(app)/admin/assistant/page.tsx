@@ -209,7 +209,7 @@ async function AssistantAdmin() {
                         </Badge>
                       )}
                       {staleIds.has(d.id) && <Badge tone="warning">{t.kb.toReview}</Badge>}
-                      {d.kind === "rules" && (
+                      {(d.kind === "rules" || d.reviewed_at) && (
                         <span className="text-ink-soft">
                           {d.reviewed_at ? fmt(t.kb.reviewedBadge, { date: formatLongDate(d.reviewed_at) }) : t.kb.neverReviewed}
                         </span>

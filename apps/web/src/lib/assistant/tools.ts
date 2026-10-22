@@ -111,7 +111,7 @@ export function toolDefinitions(): Anthropic.Tool[] {
     {
       name: "knowledge_search",
       description:
-        "Cherche dans la base de connaissances OrgaSport : fiches de règlement (résumé du règlement officiel, avec sa source et sa date) et fiches d'aide du site (fonctions, inscription, lien concours, table de marque, PIN des bénévoles, cadrage et Office, N.H., concours B et C, 2 jours, clôture et suppression des résultats). À utiliser AVANT tes connaissances générales pour toute question de règle ou d'utilisation du site. Un résultat de règlement porte un champ « cite » : reprends-le tel quel dans ta réponse.",
+        "Cherche dans la base de connaissances OrgaSport : fiches de règlement (résumé du règlement officiel, avec sa source et sa date) et fiches d'aide du site (fonctions, inscription, lien concours, table de marque, PIN des bénévoles, cadrage et Office, N.H., concours B et C, 2 jours, clôture et suppression des résultats). À utiliser AVANT tes connaissances générales pour toute question de règle ou d'utilisation du site. Un résultat de règlement porte un champ « cite » : reprends-le tel quel dans ta réponse. Une fiche d'aide porte un champ « updated » (date de sa mise à jour), à donner si on te demande si l'information est récente.",
       input_schema: {
         type: "object",
         properties: { query: { type: "string" }, sport: { type: "string", enum: sports } },
@@ -294,7 +294,8 @@ async function knowledgeSearch(input: z.infer<typeof kbInput>) {
   return {
     results: (data ?? []).map((r) => {
       const cite = rulesCitation(r);
-      return { title: r.title, text: r.content.slice(0, 1500), source: r.source_url ?? null, kind: r.kind, ...(cite ? { cite } : {}) };
+      const updated = helpUpdated(r);
+      return { title: r.title, text: r.content.slice(0, 1500), source: r.source_url ?? null, kind: r.kind, ...(cite ? { cite } : {}), ...(updated ? { updated } : {}) };
     }),
   };
 }
@@ -309,6 +310,15 @@ export function rulesCitation(r: { kind?: string | null; version_date?: string |
   const m = getMessages().assistantUi;
   const date = formatLongDate(r.version_date);
   return r.source_url ? fmt(m.rulesCitation, { date, source: r.source_url }) : fmt(m.rulesCitationNoSource, { date });
+}
+
+/**
+ * « Fiche d'aide à jour au 22 octobre 2026. » for a dated help sheet, null
+ * otherwise (a rulebook sheet cites its version instead).
+ */
+export function helpUpdated(r: { kind?: string | null; reviewed_at?: string | null }): string | null {
+  if (r.kind !== "help" || !r.reviewed_at) return null;
+  return fmt(getMessages().assistantUi.helpUpdated, { date: formatLongDate(r.reviewed_at) });
 }
 
 const SCHEMAS = {

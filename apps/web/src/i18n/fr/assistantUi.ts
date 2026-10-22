@@ -5,6 +5,7 @@ export const assistantUi = {
   fallbackNothing: "L'assistant intelligent n'est pas encore activé et je n'ai rien trouvé dans l'aide pour cette question. Essayez « Concours » pour trouver un concours ou « Mon tirage » pour votre match.",
   rulesCitation: "Règlement en vigueur au {date} (source : {source}).",
   rulesCitationNoSource: "Règlement en vigueur au {date}.",
+  helpUpdated: "Fiche d'aide à jour au {date}.",
   fallbackSuggestions: ["Comment s'inscrire à un concours ?", "Comment retrouver mon tirage ?", "Comment marche le PIN des bénévoles ?"],
   offTopic: "Je réponds seulement aux questions de sport et sur le site OrgaSport. Demandez-moi par exemple une règle du jeu ou comment marche le tirage.",
   offTopicSuggestions: ["Que dit le règlement sur le but ?", "Comment marche le PIN des bénévoles ?", "Comment marche le cadrage ?"],

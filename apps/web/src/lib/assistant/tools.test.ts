@@ -14,7 +14,7 @@ vi.mock("@/lib/data/catalog", () => ({ listCatalog: async () => [], toCatalogQue
 vi.mock("@/lib/data/tournaments", () => ({ getMyNextMatch: async () => null }));
 vi.mock("@/lib/tournament/load", () => ({ loadTournament: async () => null }));
 
-const { runTool, toolDefinitions, rulesCitation } = await import("./tools");
+const { runTool, toolDefinitions, rulesCitation, helpUpdated } = await import("./tools");
 const { formatLongDate } = await import("@/lib/format");
 const { systemPrompt } = await import("./prompt");
 
@@ -84,6 +84,16 @@ describe("assistant: dated knowledge base (A2)", () => {
     expect(rulesCitation({ kind: "rules", version_date: "2025-01-01", source_url: null })).toBe("Règlement en vigueur au 1er janvier 2025.");
     expect(rulesCitation({ kind: "rules", version_date: null, source_url: "https://www.ffpjp.org" })).toBeNull();
     expect(rulesCitation({ kind: "help", version_date: "2025-01-01" })).toBeNull();
+  });
+
+  it("dates a help sheet « à jour au … » when it was reviewed, never as a rulebook", async () => {
+    kbRows.rows = [{ ...pin, reviewed_at: "2026-10-22" }];
+    const res = await runTool("knowledge_search", { query: "PIN" }, ctx);
+    const out = JSON.parse(res.content) as { results: { cite?: string; updated?: string }[] };
+    expect(out.results[0]!.updated).toBe("Fiche d'aide à jour au 22 octobre 2026.");
+    expect(out.results[0]!.cite).toBeUndefined();
+    expect(helpUpdated({ kind: "help", reviewed_at: null })).toBeNull();
+    expect(helpUpdated({ kind: "rules", reviewed_at: "2026-10-16" })).toBeNull();
   });
 
   it("tells the model to cite the rulebook version", () => {

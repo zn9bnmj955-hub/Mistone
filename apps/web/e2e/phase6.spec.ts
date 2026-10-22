@@ -69,6 +69,8 @@ test.describe("assistant", () => {
     const pin = await ask("Comment marche le PIN des bénévoles ?");
     await expect(pin).toContainText("Aide OrgaSport : le PIN des bénévoles");
     await expect(pin).not.toContainText(/Règlement en vigueur au/);
+    // Help sheets are dated too (A2).
+    await expect(pin).toContainText(/Fiche d'aide à jour au \d{1,2}(er)? \S+ \d{4}/);
   });
 
   test("the admin sees usage, adds a knowledge document, finds it, then deletes it", async ({ page }) => {
