@@ -64,13 +64,17 @@ describe("POST /api/push/subscribe and the purge (B3)", () => {
     expect(writes.some((w) => w.table === "push_targets" && w.op === "upsert")).toBe(true);
   });
 
-  // Écart relevé : la route ne regarde pas purged_at ; l'équipe (anonymisée) existe encore,
-  // donc l'appareil (adresse push, navigateur) est enregistré et rattaché à un concours purgé,
-  // et ne sera jamais effacé. À passer en `it` une fois corrigé.
-  it.fails("refuses a purged tournament and stores nothing (device, follow)", async () => {
+  it("refuses a purged tournament and stores nothing (device, follow)", async () => {
     tournament = { id: "t1", status: "archived", purged_at: "2026-10-01T03:23:00.000Z" };
     const res = await send();
-    expect(res.status).not.toBe(200);
+    expect(res.status).toBe(410);
     expect(writes.filter((w) => w.table === "push_subscriptions" || w.table === "push_targets")).toEqual([]);
+  });
+
+  it("refuses a closed (archived) tournament not yet purged", async () => {
+    tournament = { id: "t1", status: "archived", purged_at: null };
+    const res = await send();
+    expect(res.status).toBe(410);
+    expect(writes).toEqual([]);
   });
 });

@@ -29,15 +29,17 @@ async function viewerId(): Promise<string | null> {
 }
 
 async function resolveTeam(rawCode: string | undefined, team: number | undefined) {
-  if (!rawCode) return { tournamentId: null, teamId: null };
+  if (!rawCode) return { tournamentId: null, teamId: null, closed: false };
   const code = normalizeShortCode(rawCode);
   if (!isShortCode(code)) return null;
   const admin = createAdminClient();
-  const { data: t } = await admin.from("tournaments").select("id").eq("short_code", code).neq("status", "draft").maybeSingle();
+  const { data: t } = await admin.from("tournaments").select("id, status, purged_at").eq("short_code", code).neq("status", "draft").maybeSingle();
   if (!t) return null;
-  if (!team) return { tournamentId: t.id, teamId: null };
+  // Closed (archived) or purged: nothing new may follow it — the purge never runs twice.
+  const closed = t.status === "archived" || !!t.purged_at;
+  if (!team) return { tournamentId: t.id, teamId: null, closed };
   const { data: tm } = await admin.from("teams").select("id").eq("tournament_id", t.id).eq("number", team).maybeSingle();
-  return tm ? { tournamentId: t.id, teamId: tm.id } : null;
+  return tm ? { tournamentId: t.id, teamId: tm.id, closed } : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -47,6 +49,7 @@ export async function POST(request: NextRequest) {
   const { subscription: sub, code, team } = parsed.data;
   const target = await resolveTeam(code, team);
   if (target === null) return json({ error: { code: "NOT_FOUND" } }, 404);
+  if (target.closed) return json({ error: { code: "TOURNAMENT_ARCHIVED" } }, 410);
   const userId = await viewerId();
   const admin = createAdminClient();
   const { data: existing } = await admin.from("push_subscriptions").select("id, user_id").eq("endpoint", sub.endpoint).maybeSingle();
