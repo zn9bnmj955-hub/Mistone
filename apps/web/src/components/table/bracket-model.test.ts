@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   applyCommand,
+  canDrawNext,
   createIdGenerator,
   defaultTournamentConfig,
   matchesOfRound,
@@ -13,7 +14,7 @@ import {
   type TournamentConfig,
 } from "@orgasport/engine";
 import { requireSport } from "@orgasport/sports";
-import { collectsEntries, entryCandidates, loneSideLabel, pauseOf, tableBrackets } from "./bracket-model";
+import { collectsEntries, entryCandidates, loneSideLabel, pauseHeld, pauseOf, tableBrackets } from "./bracket-model";
 import type { ScoringTable } from "./store";
 import { CloseLinkPanel, DrawTab, StatusControls } from "./tabs";
 import { roundName } from "./ui";
@@ -194,6 +195,42 @@ describe("A / B / C on the scoring table", () => {
     s = exec(s, { type: "tournament.resume", seed: "day2" });
     expect(pauseOf(s)).toBeNull();
     expect(html(createElement(StatusControls, { table: fakeTable(sent), state: s }))).not.toContain("Reprendre le concours");
+  });
+
+  it("a match of the A reopened during the night: still « en pause », no « Tirer le B », « Reprendre » once scored again (local engine)", () => {
+    const AUTO_B: Partial<TournamentConfig> = { ...OPT_IN_B, consolation: { ...OPT_IN_B.consolation!, entry: "auto" }, pause: { before: { remaining: 8 } } };
+    let s = exec(makeState(32, AUTO_B), { type: "round.draw", bracket: "main", seed: "a" });
+    for (let i = 0; i < 200; i++) {
+      const open = Object.values(s.matches).find((x) => x.sideA.length && x.sideB.length && ["ready", "waiting_venue", "playing"].includes(x.status));
+      if (!open) break;
+      s = exec(s, { type: "match.score", matchId: open.id, scoreA: 13, scoreB: 5 });
+    }
+    expect(pauseOf(s)).toMatchObject({ teams: 8 });
+    expect(canDrawNext(s, "consolation")).toBe(true);
+    const lastA = roundsOf(s, "main").at(-1)!;
+    const played = matchesOfRound(s, lastA.id).find((x) => x.status === "done")!;
+    s = exec(s, { type: "match.reopen", matchId: played.id });
+    // The engine holds the B (M5) while pausedAt is null: the table says so and offers no draw.
+    expect(pauseOf(s)).toBeNull();
+    expect(pauseHeld(s)).toBe(true);
+    const sent: Command[] = [];
+    let status = html(createElement(StatusControls, { table: fakeTable(sent), state: s }));
+    expect(status).toContain("Concours en pause");
+    expect(status).toContain("a été rouvert");
+    expect(status).not.toContain("Reprendre le concours");
+    const draw = html(createElement(DrawTab, { table: fakeTable(sent), state: s }));
+    expect(draw).not.toContain("Tirer le B");
+    expect(draw).not.toContain("Tirer le tour suivant");
+
+    s = exec(s, { type: "match.score", matchId: played.id, scoreA: 5, scoreB: 13 });
+    expect(pauseOf(s)).toMatchObject({ teams: 8 });
+    status = html(createElement(StatusControls, { table: fakeTable(sent), state: s }));
+    expect(status).toContain("Reprendre le concours");
+    const bRounds = roundsOf(s, "consolation").length;
+    s = exec(s, { type: "tournament.resume", seed: "day2" });
+    expect(pauseHeld(s)).toBe(false);
+    expect(roundsOf(s, "consolation").length).toBe(bRounds + 1);
+    expect(html(createElement(StatusControls, { table: fakeTable(sent), state: s }))).not.toContain("Concours en pause");
   });
 
   it("the final close is only offered once finished, folded behind a first button", () => {

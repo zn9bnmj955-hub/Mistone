@@ -24,7 +24,7 @@ import type { ScoringTable } from "./store";
 import { Btn, NumberInput, Panel, roundName, sideName, teamMap } from "./ui";
 import { PinHelp } from "./PinHelp";
 import { VolunteerSheetPrint } from "./VolunteerSheetPrint";
-import { collectsEntries, entryCandidates, loneSideLabel, pauseOf, tableBrackets } from "./bracket-model";
+import { collectsEntries, entryCandidates, loneSideLabel, pauseHeld, pauseOf, tableBrackets } from "./bracket-model";
 import { volunteerSheet, type VolunteerSheet } from "./volunteer-sheet";
 
 const m = () => getMessages().table;
@@ -43,6 +43,7 @@ export function StatusControls({ table, state }: TabProps) {
   if (status === "live") next.push({ label: t.finish, to: "finished" });
   if (status === "finished") next.push({ label: t.reopen, to: "live" });
   const pause = pauseOf(state);
+  const held = pauseHeld(state);
   const p = m().pause;
   return (
     <div className="grid gap-3">
@@ -55,15 +56,17 @@ export function StatusControls({ table, state }: TabProps) {
           </Btn>
         ))}
       </div>
-      {pause && (
+      {held && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border-2 border-warning/60 bg-warning/10 p-3">
           <span className="grid">
             <strong className="text-lg">{p.title}</strong>
-            <span className="text-sm">{fmt(p.text, { teams: pause.teams })}</span>
+            <span className="text-sm">{pause ? fmt(p.text, { teams: pause.teams }) : p.reopened}</span>
           </span>
-          <Btn tone="primary" className="text-lg" onClick={() => table.dispatch({ type: "tournament.resume", seed: crypto.randomUUID?.() ?? String(Date.now()) })}>
-            {p.resume}
-          </Btn>
+          {pause && (
+            <Btn tone="primary" className="text-lg" onClick={() => table.dispatch({ type: "tournament.resume", seed: crypto.randomUUID?.() ?? String(Date.now()) })}>
+              {p.resume}
+            </Btn>
+          )}
         </div>
       )}
       {status === "archived" && (
@@ -346,7 +349,7 @@ export function DrawTab({ table, state }: TabProps) {
   const available = tableBrackets(state);
   const [shown, setShown] = useState<Bracket | "all">("all");
   const brackets = shown === "all" || !available.includes(shown) ? available : [shown];
-  const paused = Boolean(pauseOf(state));
+  const paused = pauseHeld(state);
   const newSeed = () => crypto.randomUUID?.() ?? String(Date.now());
   const mainStarted = Object.values(state.rounds).some((r) => r.bracket === "main");
   const eligible = Object.values(state.teams).filter((x) => x.status === "checked_in").length || Object.values(state.teams).filter((x) => x.status === "registered").length;

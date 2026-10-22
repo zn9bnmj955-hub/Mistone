@@ -2,6 +2,7 @@ import {
   consolationEntrants,
   isBracketEnabled,
   isOfficeBye,
+  isPauseHeld,
   pausedAt,
   roundsOf,
   type Bracket,
@@ -79,6 +80,15 @@ export function entryCandidates(state: EngineState, bracket: ExtraBracket): Entr
 export function pauseOf(state: EngineState): PausePoint | null {
   if (state.tournament.status !== "live") return null;
   return pausedAt(state);
+}
+
+/**
+ * The two-day pause holds every bracket: also while a match of the A's last
+ * round before the pause is reopened during the night (pauseOf is then null,
+ * « Reprendre » waits for its score). No draw button is offered meanwhile.
+ */
+export function pauseHeld(state: EngineState): boolean {
+  return state.tournament.status === "live" && isPauseHeld(state);
 }
 
 /** One-sided game: « Office » in a cadrage (qualified without playing), « Exempt » before it, null for a real game. */

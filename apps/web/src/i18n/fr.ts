@@ -535,6 +535,7 @@ export const fr = {
       title: "Concours en pause",
       text: "Le tour suivant ({teams} équipes encore en lice) n'est pas tiré. Le B et le C attendent aussi.",
       resume: "Reprendre le concours",
+      reopened: "Un match du dernier tour avant la pause a été rouvert : saisissez son score, puis reprenez le concours. Le B et le C attendent.",
     },
     closeLink: {
       title: "Clôture définitive",
