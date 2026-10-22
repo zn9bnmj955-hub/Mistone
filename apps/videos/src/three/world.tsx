@@ -424,6 +424,17 @@ export function Dust3D({ t, center = [0, 0, 0], size = [40, 10, 40], count = 260
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
+    // A grain that drifts right past the lens grows to a big soft blob for one or
+    // two frames and reads as a flash (seen in the 9:16 cut, wider field of view):
+    // grains fade out smoothly as they come closer than a few metres to the camera.
+    mat.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying float vNearFade;")
+        .replace("#include <project_vertex>", "#include <project_vertex>\nvNearFade = smoothstep(2.0, 5.0, -mvPosition.z);");
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nvarying float vNearFade;")
+        .replace("#include <color_fragment>", "#include <color_fragment>\ndiffuseColor.a *= vNearFade;");
+    };
     const p = new THREE.Points(geo, mat);
     p.frustumCulled = false;
     return p;
