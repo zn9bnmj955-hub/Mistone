@@ -682,6 +682,18 @@ function pauseReachedBefore(state: EngineState): boolean {
 }
 
 /**
+ * True while the two-day pause holds the brackets: pausedAt is set, or the A's
+ * round before the pause was played to the end and one of its matches was
+ * reopened during the night (no draw of the A, the B or the C until it is
+ * scored again and the tournament resumed). Same rule as autoAdvance, for the
+ * scoring table (no draw button offered meanwhile).
+ */
+export function isPauseHeld(state: EngineState): boolean {
+  if (pausedAt(state)) return true;
+  return pausePending(state) && pauseReachedBefore(state);
+}
+
+/**
  * Draws that happen on their own once the previous round is over (never the
  * first one). The two-day pause stops all of them: the B and the C wait with the A.
  * While the A plays its last round before the pause, the B and the C go on as

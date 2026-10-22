@@ -29,7 +29,7 @@ export {
   type TeamAffiliation,
 } from "./queries";
 export { stageOf, isFinalPhaseMatch, isFixedTree, compareRounds, teamsInRound, type Stage } from "./bracket";
-export { bracketStartCount, canDrawNext, consolationEntrants, C_MIN_B_TEAMS, eliminationDrawPlan, type EliminationDrawPlan, type ExtraBracket, isBracketEnabled, poolLabels, poolTeams, poolMatches, poolRanking, isPoolComplete, pausedAt, type PausePoint, qualifiers, totalRounds } from "./formats";
+export { bracketStartCount, canDrawNext, consolationEntrants, C_MIN_B_TEAMS, eliminationDrawPlan, type EliminationDrawPlan, type ExtraBracket, isBracketEnabled, poolLabels, poolTeams, poolMatches, poolRanking, isPoolComplete, pausedAt, isPauseHeld, type PausePoint, qualifiers, totalRounds } from "./formats";
 export { computeStats, rankTeams, eliminationRanking, type TeamStats, type RankedTeam } from "./standings";
 export { autoAssignVenues, venueQueue, queuePosition, estimatePlan, slotMinutes, type Plan, type PlanInput, type PlanRound } from "./venues";
 export { applyCommand, isTournamentComplete, teamScoreCode, type Command, type CommandType, type CommandResult, type PlayerInput } from "./commands";

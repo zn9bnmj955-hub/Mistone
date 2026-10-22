@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { applyCommand, isTournamentComplete } from "./commands";
 import { EngineError } from "./errors";
-import { canDrawNext, pausedAt } from "./formats";
+import { canDrawNext, isPauseHeld, pausedAt } from "./formats";
 import { isRoundComplete, roundsOf, teamsInRound } from "./queries";
 import { createIdGenerator } from "./rng";
 import { exec, makeState, PLAYABLE_STATUSES, resetOps, type TestConfig } from "./test-helpers";
@@ -221,9 +221,23 @@ describe("two-day pause — winner changed during the night (testeur)", () => {
     const d = dayOne();
     let s = exec(d.s, { type: "match.reopen", matchId: d.m.id });
     expect(d.counts(s)).toEqual(d.held);
+    // pausedAt is null meanwhile, but the pause still holds (what the scoring table shows).
+    expect(pausedAt(s)).toBeNull();
+    expect(isPauseHeld(s)).toBe(true);
     s = exec(s, { type: "match.score", matchId: d.m.id, scoreA: 7, scoreB: 13 });
     expect(pausedAt(s)).toEqual({ phase: "elimination", round: 3, teams: 16 });
+    expect(isPauseHeld(s)).toBe(true);
     expect(d.counts(s)).toEqual(d.held);
+    expect(isPauseHeld(exec(s, { type: "tournament.resume", seed: "day2" }))).toBe(false);
+  });
+
+  it("isPauseHeld is false on day 1 before the pause and without a pause rule", () => {
+    let s = exec(makeState({ teams: 64, config: { ...ABC, pause: { before: { remaining: 16 } } } }), { type: "round.draw", bracket: "main", seed: "d1" });
+    expect(isPauseHeld(s)).toBe(false);
+    const first = Object.values(s.matches).find((m) => m.sideA.length && m.sideB.length)!;
+    s = exec(s, { type: "match.score", matchId: first.id, scoreA: 13, scoreB: 5 });
+    expect(isPauseHeld(exec(s, { type: "match.reopen", matchId: first.id }))).toBe(false);
+    expect(isPauseHeld(playAll(exec(makeState({ teams: 16, config: ABC }), { type: "round.draw", bracket: "main", seed: "d1" })))).toBe(false);
   });
 
   it("after a reopened match is scored again, resume restarts the A, the B and the C; undoing resume holds them again", () => {
