@@ -28,12 +28,15 @@ try {
   running = false;
 }
 
-describe.skipIf(!running)("demo seed loaded into the current schema (P2)", () => {
+// Each test drives psql through docker: close to 5 s under load, hence an explicit 30 s limit.
+const LIMIT_MS = 30_000;
+
+describe.skipIf(!running)("demo seed loaded into the current schema (P2)", { timeout: LIMIT_MS }, () => {
   const rows = (sql: string) => psql(DB, sql).trim().split("\n");
 
   afterAll(() => {
     psql("postgres", `drop database if exists ${DB} with (force);`);
-  });
+  }, LIMIT_MS);
 
   it("loads in one transaction without error", () => {
     psql("postgres", `drop database if exists ${DB} with (force);\ncreate database ${DB};`);
