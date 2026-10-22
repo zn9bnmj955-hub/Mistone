@@ -339,3 +339,71 @@ describe("cadrage, Office, B/C and pause", () => {
     for (const e of events) expect(e.key.startsWith(e.kind === "draw_published" ? "draw:" : e.kind === "score_validated" ? "score:" : e.kind === "paused" ? "pause:" : `${e.kind}:`)).toBe(true);
   });
 });
+
+describe("B4 — cases checked by the tester", () => {
+  const m = getMessages();
+  const withB = { consolation: { enabled: true, source: "losers_round_1", entry: "auto", feeCents: null, losersOfRound: 1 } } as const;
+
+  it("Office in the B: « d'office » message named « concours B, cadrage », the team left out of the B draw and never called « À vous » for it", () => {
+    let found = 0;
+    for (let n = 9; n <= 40; n++) {
+      const s = tournament(n, 32, withB);
+      const run = runner(s);
+      const events: NotifyEvent[] = [];
+      const r1 = run({ type: "round.draw", bracket: "main", seed: `x${n}` }, "draw");
+      events.push(...eventsFromChanges(r1.changes, r1.state));
+      const after = playAll(r1.state, run, events, "s");
+      for (const e of events) {
+        if (e.kind !== "office") continue;
+        const match = after.matches[e.matchId]!;
+        const round = after.rounds[match.roundId]!;
+        if (round.bracket !== "consolation") continue;
+        found++;
+        expect(roundText(after, round, m)).toBe("concours B, cadrage");
+        const draw = events.find((x): x is Extract<NotifyEvent, { kind: "draw_published" }> => x.kind === "draw_published" && x.roundId === round.id)!;
+        expect(draw.teamIds).not.toContain(e.teamIds[0]);
+        expect(events.some((x) => x.kind === "your_turn" && after.matches[x.matchId]!.roundId === round.id && x.teamIds.includes(e.teamIds[0]!))).toBe(false);
+        expect(renderBody(requireSport("petanque"), "office", { round: roundText(after, round, m) })).toBe(
+          "Qualifiés d'office pour le tour suivant (concours B, cadrage) : pas de partie à jouer.",
+        );
+      }
+      const keys = events.map((x) => x.key);
+      expect(new Set(keys).size).toBe(keys.length);
+    }
+    expect(found).toBeGreaterThan(0);
+  });
+
+  it("pause « after round 1 »: « Reprise demain » once (key pause:elimination:2), nothing drawn before the resume", () => {
+    const s = tournament(16, 8, { ...withB, pause: { afterRound: 1 } });
+    const run = runner(s);
+    const events: NotifyEvent[] = [];
+    const r1 = run({ type: "round.draw", bracket: "main", seed: "x" }, "draw");
+    events.push(...eventsFromChanges(r1.changes, r1.state));
+    const evening = playAll(r1.state, run, events, "s");
+    expect(events.filter((e) => e.kind === "paused").map((e) => e.key)).toEqual(["pause:elimination:2"]);
+    const drawnBrackets = events.filter((e): e is Extract<NotifyEvent, { kind: "draw_published" }> => e.kind === "draw_published").map((e) => evening.rounds[e.roundId]!.bracket);
+    expect(drawnBrackets).toEqual(["main"]); // only the 1st round: the A's 2nd round and the B wait for the resume
+    const resume = run({ type: "tournament.resume", seed: "day2" }, "resume");
+    const morning = eventsFromChanges(resume.changes, resume.state);
+    expect(morning.some((e) => e.kind === "draw_published")).toBe(true);
+    expect(morning.some((e) => e.kind === "paused")).toBe(false);
+  });
+
+  // Gap found by the tester (not fixed): the « paused » event goes to every team still
+  // « registered » / « checked_in », and teams are never marked eliminated, so teams out of
+  // every bracket also get « Reprise demain : le prochain tirage… » (and the email fallback).
+  it.fails("pause without B: teams already out of the tournament do not get « Reprise demain »", () => {
+    const s = tournament(16, 8, { pause: { before: { remaining: 4 } } });
+    const run = runner(s);
+    const events: NotifyEvent[] = [];
+    const r1 = run({ type: "round.draw", bracket: "main", seed: "x" }, "draw");
+    const after = playAll(r1.state, run, events, "s");
+    const paused = events.find((e) => e.kind === "paused")!;
+    const out = Object.values(after.matches)
+      .filter((x) => x.status === "done")
+      .flatMap((x) => ((x.scoreA ?? 0) > (x.scoreB ?? 0) ? x.sideB : x.sideA));
+    expect(out).toHaveLength(12);
+    expect(paused.teamIds).toHaveLength(4);
+    expect(paused.teamIds.filter((id) => out.includes(id))).toEqual([]);
+  });
+});
