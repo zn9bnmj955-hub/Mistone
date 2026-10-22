@@ -215,21 +215,22 @@ update public.kb_documents set kind = 'rules', version_date = '2026-10-16', revi
   where title = 'Pétanque : matériel' and kind = 'help' and version_date is null;
 update public.kb_documents set kind = 'rules', version_date = '2026-10-16', reviewed_at = '2026-10-16'
   where title = 'Pétanque : règlement officiel — but nul, boules nulles et mesure' and kind = 'help' and version_date is null;
--- Help sheets added before they were dated: date them (a date set in the admin is kept).
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Pétanque : formats de concours' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : retrouver son match' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : s''inscrire à un concours' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : organiser un concours (lien concours)' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : la table de marque' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : les fonctions du site' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : le PIN des bénévoles' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : le cadrage et les qualifiés d''office (Office)' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : N.H. (équipe non homogène)' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours B et C' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours sur 2 jours' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : clôture du concours et suppression des résultats' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : pointage, forfaits, exempts et liste d''attente' and kind = 'help' and reviewed_at is null;
-update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : saisie des scores par les capitaines' and kind = 'help' and reviewed_at is null;
+-- Help sheets added before they were dated: date them only when their stored text is the current one
+-- (an older text, or one edited in the admin, stays undated; a date set in the admin is kept).
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Pétanque : formats de concours' and kind = 'help' and reviewed_at is null and md5(body) = '01ce50767a463cba52575c145006a58a';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : retrouver son match' and kind = 'help' and reviewed_at is null and md5(body) = 'f0db5183d4d1025c671f19237bbe885c';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : s''inscrire à un concours' and kind = 'help' and reviewed_at is null and md5(body) = 'e180510b4244a07234f0d447a50e2f09';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : organiser un concours (lien concours)' and kind = 'help' and reviewed_at is null and md5(body) = '0a3c6b2771ebd50c37a9c15184b5ecf2';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : la table de marque' and kind = 'help' and reviewed_at is null and md5(body) = '70f04316e049411f3ac9bc6cdd84ae85';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : les fonctions du site' and kind = 'help' and reviewed_at is null and md5(body) = '51a6261ff67cf4a9cf50755005d156d5';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : le PIN des bénévoles' and kind = 'help' and reviewed_at is null and md5(body) = 'b4b76384e8840b8fc8effca275293999';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : le cadrage et les qualifiés d''office (Office)' and kind = 'help' and reviewed_at is null and md5(body) = '6fabc4c8cf7f2f7bc91e630f820b3b43';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : N.H. (équipe non homogène)' and kind = 'help' and reviewed_at is null and md5(body) = '8b2047d344cb1b15dde1b7cc218b2d92';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours B et C' and kind = 'help' and reviewed_at is null and md5(body) = '8db70f64af232edfae67bd5647d528b6';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : concours sur 2 jours' and kind = 'help' and reviewed_at is null and md5(body) = 'c948c91a87fdf700acfa75e8b3fa0d36';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : clôture du concours et suppression des résultats' and kind = 'help' and reviewed_at is null and md5(body) = 'd65630553b1e94bd8a15b040d4f37025';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : pointage, forfaits, exempts et liste d''attente' and kind = 'help' and reviewed_at is null and md5(body) = '6573142152bc9ca469af28eb3d507cb8';
+update public.kb_documents set reviewed_at = '2026-10-22' where title = 'Aide OrgaSport : saisie des scores par les capitaines' and kind = 'help' and reviewed_at is null and md5(body) = '87e18120ea1fb15724603ede4151388a';
 
 -- Legal pages: empty placeholders, written later by the site owner.
 insert into public.legal_pages (slug, title, body, published) values ('mentions-legales', 'Mentions légales', '', false) on conflict (slug) do nothing;

@@ -8,11 +8,13 @@
  * (the "enabled" switch is kept), everything else is only added when missing,
  * so prices, settings and texts edited in the administration are kept.
  */
+import { createHash } from "node:crypto";
 import { SPORTS } from "@orgasport/sports";
 import { KB_DOCS } from "./kb-content";
 import { APP_SETTINGS, LEGAL_PAGES, PRICING_PLANS } from "./reference-data";
 
 const text = (v: string | null | undefined) => (v == null ? "null" : `'${v.replace(/'/g, "''")}'`);
+const md5 = (v: string) => createHash("md5").update(v, "utf8").digest("hex");
 const jsonb = (v: unknown) => `${text(JSON.stringify(v))}::jsonb`;
 
 const out: string[] = [
@@ -54,9 +56,11 @@ const out: string[] = [
       `update public.kb_documents set kind = 'rules', version_date = ${text(d.versionDate)}, reviewed_at = ${text(d.reviewedAt)}\n` +
       `  where title = ${text(d.title)} and kind = 'help' and version_date is null;`,
   ),
-  "-- Help sheets added before they were dated: date them (a date set in the admin is kept).",
+  "-- Help sheets added before they were dated: date them only when their stored text is the current one",
+  "-- (an older text, or one edited in the admin, stays undated; a date set in the admin is kept).",
   ...KB_DOCS.filter((d) => d.kind === "help" && d.reviewedAt).map(
-    (d) => `update public.kb_documents set reviewed_at = ${text(d.reviewedAt)} where title = ${text(d.title)} and kind = 'help' and reviewed_at is null;`,
+    (d) =>
+      `update public.kb_documents set reviewed_at = ${text(d.reviewedAt)} where title = ${text(d.title)} and kind = 'help' and reviewed_at is null and md5(body) = ${text(md5(d.body))};`,
   ),
   "",
   "-- Legal pages: empty placeholders, written later by the site owner.",

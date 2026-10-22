@@ -242,3 +242,6 @@ Pour les arrêter : `select cron.unschedule('orgasport-tick');`, `select cron.un
 - Si une mise à jour contient une nouvelle migration (`supabase/migrations/`) :
   `npx supabase db push`, **avant** le déploiement.
 - Si les sports ou la base de connaissances ont changé : relancez `supabase/reference.sql`.
+  Une fiche d'aide déjà en base n'est jamais réécrite (un texte modifié dans l'admin est gardé) : après la mise
+  à jour, ouvrez `/admin/assistant` et recopiez ou relisez les fiches **sans date** de mise à jour (leur texte
+  n'est plus celui du site), puis datez-les.

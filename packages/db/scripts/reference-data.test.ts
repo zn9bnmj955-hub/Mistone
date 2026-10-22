@@ -1,6 +1,9 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { PRICING_PLANS } from "./reference-data";
+
+const md5 = (v: string) => createHash("md5").update(v, "utf8").digest("hex");
 
 // The plan description is shown to the club right above the "Pay" button.
 describe("pricing plans", () => {
@@ -63,7 +66,7 @@ describe("knowledge base", async () => {
     const sql = readFileSync(new URL("../../../supabase/reference.sql", import.meta.url), "utf8");
     const pin = KB_DOCS.find((d) => /PIN/.test(d.title))!;
     expect(sql).toContain(
-      `update public.kb_documents set reviewed_at = '${pin.reviewedAt}' where title = '${pin.title}' and kind = 'help' and reviewed_at is null;`,
+      `update public.kb_documents set reviewed_at = '${pin.reviewedAt}' where title = '${pin.title}' and kind = 'help' and reviewed_at is null and md5(body) = '${md5(pin.body)}';`,
     );
   });
 
@@ -90,19 +93,16 @@ describe("knowledge base", async () => {
     }
   });
 
-  // Gap found in A2: in a production database that already has a help sheet
-  // (inserted once per title, never rewritten), reference.sql dates it
-  // « à jour au 22 octobre 2026 » whatever its stored text. The 2-day sheet
-  // (no « Reprendre le concours », « ou un tirage manuel ») and the clôture
-  // sheet (no 6-month paragraph) would then be served with their old text and
-  // « Fiche d'aide à jour au 22 octobre 2026 ». The date should only be set
-  // when the stored text is the one it dates.
-  it.fails("in production, dates a help sheet only when its stored text is the current one", () => {
+  // Found in A2: a help sheet already in a production database is never
+  // rewritten (inserted once per title). Dating it whatever its stored text would
+  // serve an old text as « à jour au … ». The date is only set when the stored
+  // text is exactly the current one (md5 of the body, on one line).
+  it("in production, dates a help sheet only when its stored text is the current one", () => {
     const sql = readFileSync(new URL("../../../supabase/reference.sql", import.meta.url), "utf8");
     for (const d of KB_DOCS.filter((x) => x.kind === "help")) {
       const line = sql.split("\n").find((l) => l.startsWith("update public.kb_documents set reviewed_at") && l.includes(`title = '${d.title.replace(/'/g, "''")}'`));
       expect(line, d.title).toBeDefined();
-      expect(line, d.title).toMatch(/\bbody\b/);
+      expect(line, d.title).toContain(`and md5(body) = '${md5(d.body)}';`);
     }
   });
 });
