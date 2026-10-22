@@ -54,6 +54,10 @@ const out: string[] = [
       `update public.kb_documents set kind = 'rules', version_date = ${text(d.versionDate)}, reviewed_at = ${text(d.reviewedAt)}\n` +
       `  where title = ${text(d.title)} and kind = 'help' and version_date is null;`,
   ),
+  "-- Help sheets added before they were dated: date them (a date set in the admin is kept).",
+  ...KB_DOCS.filter((d) => d.kind === "help" && d.reviewedAt).map(
+    (d) => `update public.kb_documents set reviewed_at = ${text(d.reviewedAt)} where title = ${text(d.title)} and kind = 'help' and reviewed_at is null;`,
+  ),
   "",
   "-- Legal pages: empty placeholders, written later by the site owner.",
   ...LEGAL_PAGES.map(

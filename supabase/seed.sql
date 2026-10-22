@@ -1182,7 +1182,7 @@ Perdre 13 à 0, c''est « être fanny » : une tradition populaire, sans conséq
 Le but (cochonnet) est en bois ou en matière synthétique, d''environ 30 millimètres de diamètre.
 
 Pour un concours amical, chacun peut jouer avec ses boules de loisir ; pour un concours officiel réservé aux licenciés, les boules doivent être homologuées.', true),
-  ('01758f9d-721f-432c-96b9-7954fb9f1f7c', 'Pétanque : formats de concours', 'petanque', null, 'help', null, null, 'Élimination directe : les équipes sont tirées au sort par paires, le vainqueur continue, le perdant est éliminé (ou va au concours complémentaire). Avec un nouveau tirage à chaque tour, les rencontres du tour suivant sont tirées au sort parmi les gagnants ; avec un tableau fixe, le parcours jusqu''à la finale est connu dès le départ.
+  ('01758f9d-721f-432c-96b9-7954fb9f1f7c', 'Pétanque : formats de concours', 'petanque', null, 'help', null, '2026-10-22', 'Élimination directe : les équipes sont tirées au sort par paires, le vainqueur continue, le perdant est éliminé (ou va au concours complémentaire). Avec un nouveau tirage à chaque tour, les rencontres du tour suivant sont tirées au sort parmi les gagnants ; avec un tableau fixe, le parcours jusqu''à la finale est connu dès le départ.
 
 Concours complémentaire : un second tableau pour les équipes éliminées tôt (par exemple les perdants du premier tour), pour que tout le monde joue plusieurs parties.
 
@@ -1195,7 +1195,7 @@ Mêlée tournante : chacun s''inscrit seul, les équipes sont refaites à chaque
 Exempt : quand le nombre d''équipes est impair avant le cadrage, une équipe ne joue pas la partie et la gagne automatiquement 13 à 7 (jamais deux fois la même équipe). Un forfait, lui, se compte 13 à 0.
 
 Cadrage : après la 1re partie (ou la 2e, au choix de l''organisateur), un tour de cadrage ramène le nombre d''équipes à 4, 8, 16, 32 ou 64 ; les parties suivantes se jouent sans exempt. Voir la fiche « le cadrage et les qualifiés d''office ».', true),
-  ('5e60e490-ffca-4fbc-93ff-9aac2ddcb9e3', 'Aide OrgaSport : retrouver son match', null, null, 'help', null, null, 'Chaque concours a un code de 4 caractères (par exemple 7KQ2), écrit sur l''affiche avec un QR code. Sur l''accueil d''OrgaSport, tapez le code dans « Retrouver mon tirage » ou scannez le QR code.
+  ('5e60e490-ffca-4fbc-93ff-9aac2ddcb9e3', 'Aide OrgaSport : retrouver son match', null, null, 'help', null, '2026-10-22', 'Chaque concours a un code de 4 caractères (par exemple 7KQ2), écrit sur l''affiche avec un QR code. Sur l''accueil d''OrgaSport, tapez le code dans « Retrouver mon tirage » ou scannez le QR code.
 
 Sur la page du concours, tapez votre numéro d''équipe ou votre nom dans « Trouver mon équipe » : vous voyez votre prochain match, votre terrain, l''heure et votre adversaire, puis l''historique de vos parties. La page fonctionne même sans connexion internet rapide et sur un vieux téléphone.
 
@@ -1204,14 +1204,14 @@ Touchez « C''est mon équipe » : votre équipe sera mise en avant automatiquem
 Avec un compte joueur, le bouton « Mon tirage » ouvre directement votre prochain match quand vous jouez un concours en cours.
 
 Pour être prévenu quand votre match est prêt (« À vous ! Terrain 12 · 15 h 40 »), touchez « Me prévenir quand c''est à moi ». Sur iPhone, il faut d''abord ajouter le site à l''écran d''accueil (bouton Partager, puis « Sur l''écran d''accueil »).', true),
-  ('84e80209-d5d5-43f5-868c-9f13e67af01f', 'Aide OrgaSport : s''inscrire à un concours', null, null, 'help', null, null, 'Ouvrez l''onglet « Concours », choisissez un concours, puis touchez « S''inscrire ». Le formulaire s''adapte au concours : nombre de joueurs, numéro de licence si le concours est réservé aux licenciés, contact du capitaine, acceptation du règlement.
+  ('84e80209-d5d5-43f5-868c-9f13e67af01f', 'Aide OrgaSport : s''inscrire à un concours', null, null, 'help', null, '2026-10-22', 'Ouvrez l''onglet « Concours », choisissez un concours, puis touchez « S''inscrire ». Le formulaire s''adapte au concours : nombre de joueurs, numéro de licence si le concours est réservé aux licenciés, contact du capitaine, acceptation du règlement.
 
 Le numéro de licence sert uniquement à l''organisateur : il n''est jamais affiché publiquement. Le contact du capitaine (téléphone ou email) n''est visible que par l''organisateur.
 
 Après l''inscription, vous recevez votre numéro d''équipe, un fichier pour l''ajouter à votre agenda, et vous pouvez activer les notifications. Si le concours est complet, votre équipe est placée sur liste d''attente.
 
 L''inscription (la mise) se règle sur place, à la table de marque, le jour du concours. Pensez à pointer votre équipe à la table de marque avant l''heure limite indiquée.', true),
-  ('36074839-dcb1-4c2a-92c5-78443c5b19c2', 'Aide OrgaSport : organiser un concours (lien concours)', null, null, 'help', null, null, 'Un club achète un « lien concours » pour chaque concours. Depuis l''espace club, touchez « Créer un concours » : un formulaire en étapes propose des réglages par défaut adaptés au sport, et le brouillon est enregistré automatiquement.
+  ('36074839-dcb1-4c2a-92c5-78443c5b19c2', 'Aide OrgaSport : organiser un concours (lien concours)', null, null, 'help', null, '2026-10-22', 'Un club achète un « lien concours » pour chaque concours. Depuis l''espace club, touchez « Créer un concours » : un formulaire en étapes propose des réglages par défaut adaptés au sport, et le brouillon est enregistré automatiquement.
 
 Les étapes : qui gère le concours, informations générales (date, heure, adresse), participants, argent (mise, dotation), déroulement et tirage, terrains, communication, puis récapitulatif et paiement. Un club pressé peut passer directement au récapitulatif avec les réglages par défaut.
 
@@ -1220,7 +1220,7 @@ Le bouton « Aide-moi à choisir » propose un format adapté au nombre d''équi
 Le paiement se fait sur la page sécurisée de Stripe (carte bancaire, Apple Pay, Google Pay). Aucune donnée bancaire ne passe par OrgaSport. Le concours est publié automatiquement dès que Stripe confirme le paiement, avec son lien court, son QR code et son affiche A4.
 
 Un code PIN de table de marque est créé au paiement et envoyé par email à l''organisateur ; d''autres PIN peuvent être ajoutés ensuite (voir la fiche « le PIN des bénévoles »).', true),
-  ('4518b202-2168-4001-8f76-10db687c1455', 'Aide OrgaSport : la table de marque', null, null, 'help', null, null, 'La table de marque s''ouvre depuis la page du concours (/c/CODE/table), avec le compte de l''organisateur ou un code PIN donné aux bénévoles.
+  ('4518b202-2168-4001-8f76-10db687c1455', 'Aide OrgaSport : la table de marque', null, null, 'help', null, '2026-10-22', 'La table de marque s''ouvre depuis la page du concours (/c/CODE/table), avec le compte de l''organisateur ou un code PIN donné aux bénévoles.
 
 Elle permet de pointer les équipes, d''inscrire sur place, de lancer le tirage (ou de le laisser se faire automatiquement à l''heure prévue), d''attribuer les terrains, de saisir les scores et de voir le classement.
 
@@ -1240,7 +1240,7 @@ Mesure : la mesure d''un point revient au joueur qui a joué la dernière boule 
 Égalité : si les deux boules les plus proches de chaque équipe sont à égale distance du but, la mène est nulle quand plus personne n''a de boule à jouer ; sinon, l''équipe qui a joué la dernière rejoue, puis l''autre, jusqu''à ce que l''une reprenne le point.
 
 Comportement : un joueur doit se tenir à l''écart (à au moins 2 mètres) pendant que l''adversaire joue, et ne pas le gêner. Les sanctions (avertissement, annulation de la boule jouée ou de la suivante, exclusion) sont décidées par l''arbitre selon le règlement.', true),
-  ('bce6375f-a0b0-445b-b190-04f15c59f1d7', 'Aide OrgaSport : les fonctions du site', null, null, 'help', null, null, 'OrgaSport gère un concours du début à la fin : inscriptions, tirage, terrains, scores et résultats en direct. Il est réservé à la pétanque pour l''instant ; d''autres sports seront ajoutés plus tard.
+  ('bce6375f-a0b0-445b-b190-04f15c59f1d7', 'Aide OrgaSport : les fonctions du site', null, null, 'help', null, '2026-10-22', 'OrgaSport gère un concours du début à la fin : inscriptions, tirage, terrains, scores et résultats en direct. Il est réservé à la pétanque pour l''instant ; d''autres sports seront ajoutés plus tard.
 
 Pour les joueurs, sans compte : le catalogue des concours (onglet « Concours »), l''inscription en ligne quand l''organisateur l''a ouverte, « Retrouver mon tirage » avec le code ou le QR code de l''affiche, les notifications « À vous ! » et l''ajout du concours à son agenda. Le compte joueur ajoute le fil « Pour vous », les concours suivis et le bouton « Mon tirage » qui ouvre directement le prochain match.
 
@@ -1249,14 +1249,14 @@ Pour les clubs : l''espace club (tableau de bord, membres, annonces, factures, s
 Le prix du lien concours est affiché au récapitulatif, avant le paiement ; un code promo peut s''appliquer. L''inscription des équipes (la mise) se règle toujours sur place : OrgaSport ne fait pas payer les joueurs.
 
 L''assistant répond aux questions sur le sport et sur le site. Les informations officielles d''un concours (horaires, tirage, terrains, résultats) viennent toujours de la base du concours. OrgaSport ne donne jamais d''heure de fin.', true),
-  ('d8b76e32-947c-4761-b0f6-d51341749532', 'Aide OrgaSport : le PIN des bénévoles', null, null, 'help', null, null, 'Le PIN est un code à donner à un bénévole qui n''a pas de compte : il ouvre la table de marque de ce concours seulement, pendant 24 h, sur son téléphone ou son ordinateur. L''organisateur peut le révoquer à tout moment.
+  ('d8b76e32-947c-4761-b0f6-d51341749532', 'Aide OrgaSport : le PIN des bénévoles', null, null, 'help', null, '2026-10-22', 'Le PIN est un code à donner à un bénévole qui n''a pas de compte : il ouvre la table de marque de ce concours seulement, pendant 24 h, sur son téléphone ou son ordinateur. L''organisateur peut le révoquer à tout moment.
 
 Un PIN de table est créé automatiquement au paiement du concours et envoyé par email à l''organisateur. D''autres PIN peuvent être ajoutés depuis la gestion du concours dans l''espace club, par exemple un par bénévole.
 
 En 3 étapes : l''organisateur crée le PIN, il le donne au bénévole (de vive voix ou avec la fiche bénévole à imprimer, qui porte le QR code de la table de marque et le PIN en grand), puis le bénévole ouvre /c/CODE/table (ou scanne le QR code) et tape le PIN.
 
 Le PIN n''est jamais écrit dans une adresse web. Après trop d''essais faux, la saisie est bloquée un moment sur l''appareil, pour éviter qu''on devine le code. Révoquer un PIN déconnecte les appareils qui l''utilisaient.', true),
-  ('726022a4-0d64-4323-b0ab-ac40b51cb82b', 'Aide OrgaSport : le cadrage et les qualifiés d''office (Office)', 'petanque', null, 'help', null, null, 'Le cadrage sert à arriver à un nombre d''équipes « rond » (4, 8, 16, 32, 64…) pour que les parties suivantes se jouent sans exempt. L''organisateur le place après la 1re partie (par défaut) ou après la 2e. Avec des poules, il se fait tout de suite après les poules.
+  ('726022a4-0d64-4323-b0ab-ac40b51cb82b', 'Aide OrgaSport : le cadrage et les qualifiés d''office (Office)', 'petanque', null, 'help', null, '2026-10-22', 'Le cadrage sert à arriver à un nombre d''équipes « rond » (4, 8, 16, 32, 64…) pour que les parties suivantes se jouent sans exempt. L''organisateur le place après la 1re partie (par défaut) ou après la 2e. Avec des poules, il se fait tout de suite après les poules.
 
 Avant le cadrage, le tirage est intégral et au hasard. Si le nombre d''équipes est impair, une équipe est exempte : elle gagne la partie 13 à 7, et ce n''est jamais deux fois la même équipe.
 
@@ -1265,24 +1265,26 @@ Au cadrage, s''il reste par exemple 7 équipes, 3 parties se jouent (6 équipes)
 Exemples : 13 équipes donnent 6 parties et 1 exempt, il en reste 7 ; puis cadrage de 3 parties et 1 d''office, il en reste 4. Avec 100 équipes, il en reste 50, puis 18 parties de cadrage et 14 d''office, il en reste 32.
 
 Si un double forfait ou un retrait laisse un nombre qui n''est pas « rond », le tour suivant crée automatiquement des places d''office, sans tour supplémentaire. Après le cadrage, les tours s''appellent 1/16, 1/8, 1/4, 1/2 et finale.', true),
-  ('5ceb6262-b488-4981-b179-cde74d7b0e46', 'Aide OrgaSport : N.H. (équipe non homogène)', 'petanque', null, 'help', null, null, 'À côté du nom d''une équipe, OrgaSport affiche son club : « (n° du club / NOM DU CLUB) » quand tous les joueurs sont du même club, ou « (N.H.) » quand l''équipe mélange des joueurs de clubs différents. N.H. veut dire « non homogène ».
+  ('5ceb6262-b488-4981-b179-cde74d7b0e46', 'Aide OrgaSport : N.H. (équipe non homogène)', 'petanque', null, 'help', null, '2026-10-22', 'À côté du nom d''une équipe, OrgaSport affiche son club : « (n° du club / NOM DU CLUB) » quand tous les joueurs sont du même club, ou « (N.H.) » quand l''équipe mélange des joueurs de clubs différents. N.H. veut dire « non homogène ».
 
 Le club de chaque joueur (numéro et nom) est une information publique ; le numéro de licence, lui, reste privé et n''est jamais affiché.
 
 L''option « Éviter deux équipes du même club au 1er tour » s''appuie sur ce club. Une équipe N.H. n''a pas de club pour cette règle. Les noms des joueurs s''affichent en « NOM Prénom », en majuscules pour le nom.', true),
-  ('2367b6b7-12d7-47a4-864e-fd7add6221c2', 'Aide OrgaSport : concours B et C', 'petanque', null, 'help', null, null, 'Le concours B (complémentaire) permet aux équipes éliminées tôt de continuer à jouer. Sans poules, il reçoit les perdants de la 1re partie du concours A (l''exempt de la 1re partie n''y va pas). Avec poules, il reçoit les équipes non qualifiées des poules.
+  ('2367b6b7-12d7-47a4-864e-fd7add6221c2', 'Aide OrgaSport : concours B et C', 'petanque', null, 'help', null, '2026-10-22', 'Le concours B (complémentaire) permet aux équipes éliminées tôt de continuer à jouer. Sans poules, il reçoit les perdants de la 1re partie du concours A (l''exempt de la 1re partie n''y va pas). Avec poules, il reçoit les équipes non qualifiées des poules.
 
 Le concours C, en option, reçoit les perdants de la 1re partie du B. Il n''est possible que si le B compte au moins 4 équipes au départ.
 
 Inscription au B ou au C : automatique (toutes les équipes concernées jouent) ou volontaire (seules les équipes inscrites à la table de marque jouent, et l''organisateur lance lui-même le 1er tirage quand tout est encaissé). Le droit d''inscription au B est indiqué pour information et se règle sur place.
 
 Le B et le C ont leur propre cadrage, comme le A, et leur 1re partie est toujours un tirage intégral.', true),
-  ('fc2b2bbf-708b-401b-b76b-36f37a19bb66', 'Aide OrgaSport : concours sur 2 jours', 'petanque', null, 'help', null, null, 'Un concours peut se jouer sur 2 jours : l''organisateur choisit à la création où le concours s''arrête le soir (avant les 1/16, les 1/8, les 1/4, les 1/2, ou après les poules).
+  ('fc2b2bbf-708b-401b-b76b-36f37a19bb66', 'Aide OrgaSport : concours sur 2 jours', 'petanque', null, 'help', null, '2026-10-22', 'Un concours peut se jouer sur 2 jours : l''organisateur choisit à la création où le concours s''arrête le soir (avant les 1/16, les 1/8, les 1/4, les 1/2, ou après les poules).
 
 Arrivé à ce point, le tirage automatique s''arrête : les concours A, B et C se mettent en pause en même temps. Les joueurs sont prévenus de la reprise.
 
-Le lendemain, la table de marque relance le concours (bouton de reprise, ou un tirage manuel) et l''enchaînement automatique reprend. Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.', true),
-  ('4e24c929-dc51-45bd-86db-49d90f8d46fe', 'Aide OrgaSport : clôture du concours et suppression des résultats', null, null, 'help', null, null, 'Quand la finale est jouée, le concours est « terminé » : l''organisateur peut encore corriger un score, un forfait ou annuler une action. Le lien concours sert pour un seul concours.
+À la table de marque, un bandeau « Concours en pause » indique combien d''équipes sont encore en lice. Pendant la nuit, l''organisateur peut encore corriger un score ou un forfait : le tour suivant n''est pas tiré pour autant, ni dans le A, ni dans le B, ni dans le C.
+
+Le lendemain, la table de marque touche « Reprendre le concours » : le tour suivant est tiré et l''enchaînement automatique reprend pour les trois concours. Le concours reste « en cours » pendant la nuit, et OrgaSport ne donne aucune heure de fin.', true),
+  ('4e24c929-dc51-45bd-86db-49d90f8d46fe', 'Aide OrgaSport : clôture du concours et suppression des résultats', null, null, 'help', null, '2026-10-22', 'Quand la finale est jouée, le concours est « terminé » : l''organisateur peut encore corriger un score, un forfait ou annuler une action. Le lien concours sert pour un seul concours.
 
 La clôture est définitive : par le bouton « Clore définitivement » à la table de marque, ou automatiquement 24 h après la finale. Ensuite plus aucune action n''est possible : ni correction, ni inscription, ni saisie de score par les capitaines.
 
@@ -1290,15 +1292,29 @@ Les résultats restent visibles 14 jours après la fin du concours. Ensuite, les
 
 En filet de sécurité, les contacts et numéros de licence des inscrits ne sont jamais gardés plus de 6 mois après le concours, même si le concours n''a pas été terminé : c''est la promesse affichée sur le formulaire d''inscription.
 
-Le code court d''un concours (par exemple 7KQ2) n''est jamais réattribué à un autre concours.', true);
+Le code court d''un concours (par exemple 7KQ2) n''est jamais réattribué à un autre concours.', true),
+  ('5190a0be-0d6a-43a4-a10b-077313e8ad68', 'Aide OrgaSport : pointage, forfaits, exempts et liste d''attente', null, null, 'help', null, '2026-10-22', 'Le jour du concours, chaque équipe se présente à la table de marque, qui la pointe (onglet « Pointage »). Seules les équipes pointées sont tirées : une équipe inscrite mais pas encore là n''entre pas dans le tirage.
+
+Une équipe absente peut être déclarée « Forfait » ; l''organisateur peut annuler ce forfait si elle arrive avant le tirage. Pendant le concours, un forfait sur un match donne la partie à l''adversaire sur le score de forfait (13 à 0 en pétanque).
+
+L''exempt n''est pas un forfait : quand le nombre d''équipes est impair avant le cadrage, une équipe tirée au sort ne joue pas la partie et la gagne 13 à 7, jamais deux fois la même.
+
+Si le concours est complet, les nouvelles équipes vont sur liste d''attente ; la table de marque peut les inscrire si une place se libère. Une équipe peut aussi être inscrite sur place (« Ajouter une équipe sur place »), elle est alors pointée tout de suite.', true),
+  ('c476a925-66ce-4881-b753-18d346ad3045', 'Aide OrgaSport : saisie des scores par les capitaines', null, null, 'help', null, '2026-10-22', 'Quand l''organisateur l''a choisi, les capitaines saisissent eux-mêmes le score de leur match sur leur téléphone, depuis la page du concours (« Saisir le score (capitaine) »), sans compte.
+
+Chaque équipe a un code équipe à 4 chiffres, donné par la table de marque (il figure sur la liste imprimée). Le capitaine choisit son match, tape « Nous » et « Eux », puis son code équipe.
+
+Le score est validé quand les deux capitaines saisissent le même. S''ils ne sont pas d''accord, le match passe « à vérifier » et la table de marque tranche. La table peut toujours saisir ou corriger un score elle-même.
+
+Après la clôture du concours, la saisie par les capitaines est fermée.', true);
 
 insert into public.news_sources (id, name, feed_url, site_url, sport_slug, enabled) values
-  ('5190a0be-0d6a-43a4-a10b-077313e8ad68', 'Démo OrgaSport', 'https://example.org/orgasport-demo.xml', 'https://example.org', null, true);
+  ('deb301a6-cff2-4074-83fd-f92f762dfb44', 'Démo OrgaSport', 'https://example.org/orgasport-demo.xml', 'https://example.org', null, true);
 
 insert into public.news_items (id, source_id, title, url, published_at) values
-  ('c476a925-66ce-4881-b753-18d346ad3045', '5190a0be-0d6a-43a4-a10b-077313e8ad68', '(Démo) Championnat départemental doublettes : les résultats', 'https://example.org/demo/resultats-doublettes', now() - interval '300 minutes'),
-  ('deb301a6-cff2-4074-83fd-f92f762dfb44', '5190a0be-0d6a-43a4-a10b-077313e8ad68', '(Démo) Nouvelle saison des triplettes : ce qui change', 'https://example.org/demo/triplettes', now() - interval '1560 minutes'),
-  ('0e8db217-2bff-49e7-8034-7924cff2481a', '5190a0be-0d6a-43a4-a10b-077313e8ad68', '(Démo) Les clubs de pétanque recrutent des bénévoles', 'https://example.org/demo/benevoles', now() - interval '3000 minutes');
+  ('0e8db217-2bff-49e7-8034-7924cff2481a', 'deb301a6-cff2-4074-83fd-f92f762dfb44', '(Démo) Championnat départemental doublettes : les résultats', 'https://example.org/demo/resultats-doublettes', now() - interval '300 minutes'),
+  ('493c13d5-429a-4b38-8f75-60002eb89080', 'deb301a6-cff2-4074-83fd-f92f762dfb44', '(Démo) Nouvelle saison des triplettes : ce qui change', 'https://example.org/demo/triplettes', now() - interval '1560 minutes'),
+  ('6d5123b3-6912-42fb-aa0e-2af46345aefb', 'deb301a6-cff2-4074-83fd-f92f762dfb44', '(Démo) Les clubs de pétanque recrutent des bénévoles', 'https://example.org/demo/benevoles', now() - interval '3000 minutes');
 
 insert into public.legal_pages (slug, title, body, published) values
   ('mentions-legales', 'Mentions légales', '', false),

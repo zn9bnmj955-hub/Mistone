@@ -28,7 +28,10 @@ describe("knowledge base", async () => {
 
   it("has a help sheet for each feature asked by the owner", () => {
     const all = KB_DOCS.map((d) => `${d.title}\n${d.body}`).join("\n");
-    for (const topic of [/PIN/, /cadrage/i, /Office/, /N\.H\./, /concours B/, /concours C/, /2 jours/, /Clore définitivement/, /14 jours/]) {
+    for (const topic of [
+      /PIN/, /cadrage/i, /Office/, /N\.H\./, /concours B/, /concours C/, /2 jours/, /Reprendre le concours/, /Clore définitivement/, /14 jours/,
+      /Pointage/, /liste d'attente/, /Forfait/, /capitaines/, /code équipe/,
+    ]) {
       expect(all).toMatch(topic);
     }
     expect(KB_DOCS.filter((d) => d.kind === "help").map((d) => d.title)).toEqual(
@@ -50,6 +53,18 @@ describe("knowledge base", async () => {
       expect(d.versionDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(d.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
+  });
+
+  it("dates every help sheet with its last review", () => {
+    for (const d of KB_DOCS.filter((x) => x.kind === "help")) expect(d.reviewedAt, d.title).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("dates in production the help sheets added before they were dated, keeping a date set in the admin", () => {
+    const sql = readFileSync(new URL("../../../supabase/reference.sql", import.meta.url), "utf8");
+    const pin = KB_DOCS.find((d) => /PIN/.test(d.title))!;
+    expect(sql).toContain(
+      `update public.kb_documents set reviewed_at = '${pin.reviewedAt}' where title = '${pin.title}' and kind = 'help' and reviewed_at is null;`,
+    );
   });
 
   it("only has sheets for enabled sports, with unique titles, and never an end time", () => {
