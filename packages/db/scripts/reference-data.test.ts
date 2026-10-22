@@ -89,4 +89,20 @@ describe("knowledge base", async () => {
       for (const d of KB_DOCS) expect(sql, `${file} : ${d.title}`).toContain(d.body.replace(/'/g, "''"));
     }
   });
+
+  // Gap found in A2: in a production database that already has a help sheet
+  // (inserted once per title, never rewritten), reference.sql dates it
+  // « à jour au 22 octobre 2026 » whatever its stored text. The 2-day sheet
+  // (no « Reprendre le concours », « ou un tirage manuel ») and the clôture
+  // sheet (no 6-month paragraph) would then be served with their old text and
+  // « Fiche d'aide à jour au 22 octobre 2026 ». The date should only be set
+  // when the stored text is the one it dates.
+  it.fails("in production, dates a help sheet only when its stored text is the current one", () => {
+    const sql = readFileSync(new URL("../../../supabase/reference.sql", import.meta.url), "utf8");
+    for (const d of KB_DOCS.filter((x) => x.kind === "help")) {
+      const line = sql.split("\n").find((l) => l.startsWith("update public.kb_documents set reviewed_at") && l.includes(`title = '${d.title.replace(/'/g, "''")}'`));
+      expect(line, d.title).toBeDefined();
+      expect(line, d.title).toMatch(/\bbody\b/);
+    }
+  });
 });
