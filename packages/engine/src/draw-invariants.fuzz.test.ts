@@ -12,11 +12,14 @@ import type { Bracket, EngineState, PauseRule } from "./types";
  * Lot 2, M8: massive random test of the draw rules (docs/LOT2-PLAN.md, « Règles retenues »).
  * Random pétanque tournaments, 2 to 300 teams, k = 1 or 2, with or without pools, B and C on or off,
  * absent teams, random forfeits (one or both sides), withdrawals and a two-day pause, played to the end.
+ * During the pause, night corrections: a match of the A's last round reopened, then started, flagged,
+ * put on a pitch and scored again, and B or C results corrected; no round is drawn meanwhile except
+ * by the resume or a manual draw.
  * Every action is undone once to prove the inverse restores the previous state exactly.
- * FUZZ_SEEDS overrides the number of seeds (2 000 by default).
+ * FUZZ_SEEDS overrides the number of seeds (1 500 by default, about 25 s).
  */
 
-const SEEDS = Number(process.env.FUZZ_SEEDS ?? 2000);
+const SEEDS = Number(process.env.FUZZ_SEEDS ?? 1500);
 const BRACKETS: Bracket[] = ["main", "consolation", "consolation_c"];
 
 /** Deterministic, key-order independent serialization (undefined fields dropped, as toEqual does). */
@@ -116,7 +119,11 @@ function play(seed: number) {
   const ids = Object.keys(s.teams);
   for (let i = 0; i < sc.absent; i++) s.teams[ids[rng.int(ids.length)]!]!.status = "registered";
   let op = 0;
-  const seen = { actions: 0, refused: 0, cadrage: 0, office: 0, exempt: 0, doubleForfeit: 0, withdrawn: 0, resume: 0, pools: 0, bracketC: 0 };
+  const seen = { actions: 0, refused: 0, cadrage: 0, office: 0, exempt: 0, doubleForfeit: 0, withdrawn: 0, resume: 0, pools: 0, bracketC: 0, nightReopen: 0 };
+  // Two-day pause: true from the moment the A is held until the resume or a manual draw of the A
+  // (tracked here, independently of the engine's own pause rule).
+  let paused = false;
+  let nights = 0;
   const run = (cmd: Command): boolean => {
     op++;
     const now = new Date(Date.UTC(2026, 9, 12, 12, 0) + op * 60_000).toISOString();
@@ -130,6 +137,15 @@ function play(seed: number) {
     }
     // Undoing the action gives back the previous state exactly.
     expectSameState(applyChanges(res.state, invertChanges(res.changes)), s, `${sc.label} — undo of ${cmd.type} (op ${op})`);
+    // A withdrawal or a double forfeit changes the number of teams left: the pause point may then
+    // rightly move or vanish (e.g. one team left, the A is over), so the draws that follow are expected.
+    const resizes = cmd.type === "team.setStatus" || (cmd.type === "match.forfeit" && cmd.side === "both");
+    if (paused && !resizes && cmd.type !== "tournament.resume" && cmd.type !== "round.draw" && res.changes.some((c) => c.entity === "round" && c.op === "create")) {
+      fail(`${sc.label} — ${cmd.type} (op ${op}) drew a round during the pause`);
+    }
+    if (cmd.type === "tournament.resume" || (cmd.type === "round.draw" && cmd.bracket === "main") || (resizes && !pausedAt(res.state))) paused = false;
+    if (pausedAt(res.state)) paused = true;
+    if (cmd.type === "match.reopen" && paused) seen.nightReopen++;
     seen.actions++;
     if (cmd.type === "match.forfeit" && cmd.side === "both") seen.doubleForfeit++;
     if (cmd.type === "team.setStatus") seen.withdrawn++;
@@ -139,10 +155,48 @@ function play(seed: number) {
     return true;
   };
 
+  /**
+   * A result of the last round of `bracket` (or of the pools), reopened; refused when a later round is built on it.
+   * In the A, never a double forfeit: scored again it would add a team, and the pause point (« before R teams »)
+   * may then legitimately move to a later round, so draws would rightly follow.
+   */
+  const reopenLast = (bracket: Bracket): string | null => {
+    const rounds = roundsOf(s, bracket);
+    const last = rounds[rounds.length - 1];
+    if (!last) return null;
+    // Pools: any pool round (the pools are played side by side), else the last round.
+    const inScope = (roundId: string) => (last.phase === "pool" ? s.rounds[roundId]!.bracket === bracket && s.rounds[roundId]!.phase === "pool" : roundId === last.id);
+    const done = Object.values(s.matches).filter((m) => inScope(m.roundId) && (m.status === "done" || m.status === "forfeit") && m.sideB.length > 0 && (bracket !== "main" || m.winner !== null));
+    if (!done.length) return null;
+    const m = rng.pick(done);
+    return run({ type: "match.reopen", matchId: m.id }) ? m.id : null;
+  };
+  const nightCorrections = () => {
+    const a = reopenLast("main");
+    if (a) {
+      const roll = rng.next();
+      if (roll < 0.25) run({ type: "match.start", matchId: a });
+      else if (roll < 0.4) run({ type: "match.setFlag", matchId: a, flag: "disputed" });
+      else if (roll < 0.5) run({ type: "match.setFlag", matchId: a, flag: "score_submitted" });
+      else if (roll < 0.65) {
+        const free = Object.values(s.venues).filter((v) => v.available && !Object.values(s.matches).some((x) => x.venueId === v.id && x.status !== "done" && x.status !== "forfeit"));
+        if (free.length) run({ type: "match.setVenue", matchId: a, venueId: rng.pick(free).id });
+      }
+      if (rng.next() < 0.3) run({ type: "match.setFlag", matchId: a, flag: "clear" });
+    }
+    // A result of the B or the C corrected meanwhile (reopened, then scored again).
+    for (const b of ["consolation", "consolation_c"] as const) {
+      if (rng.next() < 0.5) continue;
+      const m = reopenLast(b);
+      if (m) run({ type: "match.score", matchId: m, ...randomScore(s, () => rng.next(), true) });
+    }
+    // The A's reopened match is scored again by the main loop (still during the pause).
+  };
+
   run({ type: "round.draw", bracket: "main", seed: `${seed}-first` });
   for (let step = 0; step < 20_000; step++) {
     const playable = Object.values(s.matches)
-      .filter((m) => PLAYABLE_STATUSES.has(m.status))
+      .filter((m) => PLAYABLE_STATUSES.has(m.status) || m.status === "disputed" || m.status === "score_submitted") // flagged at night: the table scores it
       .sort((a, b) => (a.queuedAt ?? "").localeCompare(b.queuedAt ?? "") || a.position - b.position);
     const m = playable.length ? playable[rng.next() < 0.8 ? 0 : rng.int(playable.length)]! : null;
     const roll = rng.next();
@@ -157,11 +211,20 @@ function play(seed: number) {
       const active = Object.values(s.teams).filter((t) => t.status === "checked_in");
       if (active.length) run({ type: "team.setStatus", teamId: rng.pick(active).id, status: "withdrawn" });
     }
+    if (pausedAt(s) && nights < 2 && rng.next() < 0.5) {
+      // Night corrections: none of them may draw anything (checked in run).
+      nights++;
+      nightCorrections();
+      continue;
+    }
     if (pausedAt(s) && rng.next() < 0.5) {
+      nights = 0;
       run({ type: "tournament.resume", seed: `${seed}-resume-${step}` });
       continue;
     }
     const next = BRACKETS.find((b) => canDrawNext(s, b));
+    // A withdrawal may have let a held draw happen (e.g. the A is over): play it.
+    if (!next && Object.values(s.matches).some((x) => PLAYABLE_STATUSES.has(x.status))) continue;
     if (!next) break;
     if (!run({ type: "round.draw", bracket: next, seed: `${seed}-${next}-${step}` })) throw new Error(`${sc.label} — draw of ${next} refused`);
   }
@@ -189,7 +252,7 @@ describe("draw invariants on random tournaments (M8)", () => {
       }
     }
     // Every situation of the rules was met many times (not a test that silently plays nothing).
-    for (const k of ["cadrage", "office", "exempt", "doubleForfeit", "withdrawn", "resume", "pools", "bracketC"]) expect(total[k], k).toBeGreaterThan(SEEDS / 50);
+    for (const k of ["cadrage", "office", "exempt", "doubleForfeit", "withdrawn", "resume", "pools", "bracketC", "nightReopen"]) expect(total[k], k).toBeGreaterThan(SEEDS / 50);
     expect(total.actions).toBeGreaterThan(SEEDS * 10);
     if (process.env.FUZZ_STATS) console.log(total);
   }, 120_000);
