@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyCommand, type Command } from "./commands";
 import { EngineError } from "./errors";
-import { canDrawNext, pausedAt } from "./formats";
+import { canDrawNext, isPauseHeld, pausedAt } from "./formats";
 import { isAfterCadragePoint, isOfficeBye, isPowerOfTwo, matchesOfRound, roundLabel, roundsOf } from "./queries";
 import { createIdGenerator, createRng, type Rng } from "./rng";
 import { makeState, PLAYABLE_STATUSES, randomScore, type TestConfig } from "./test-helpers";
@@ -145,6 +145,10 @@ function play(seed: number) {
     }
     if (cmd.type === "tournament.resume" || (cmd.type === "round.draw" && cmd.bracket === "main") || (resizes && !pausedAt(res.state))) paused = false;
     if (pausedAt(res.state)) paused = true;
+    // The scoring table shows « Concours en pause » (isPauseHeld) while the pause holds, night corrections included.
+    // Known gap (it.fails in pause-night.test.ts): pools with a « before R teams » pause falling right after the pools.
+    const knownGap = sc.config.format === "pools_then_bracket" && sc.config.pause !== "afterPools" && roundsOf(res.state, "main", "final").length === 0;
+    if (paused && !knownGap && !isPauseHeld(res.state)) fail(`${sc.label} — ${cmd.type} (op ${op}): the pause holds but isPauseHeld is false`);
     if (cmd.type === "match.reopen" && paused) seen.nightReopen++;
     seen.actions++;
     if (cmd.type === "match.forfeit" && cmd.side === "both") seen.doubleForfeit++;
