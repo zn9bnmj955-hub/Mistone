@@ -64,6 +64,14 @@ describe("« Enregistrer pour hors ligne » file (T4)", () => {
     expect(Buffer.byteLength(saved)).toBeLessThan(100_000);
   });
 
+  // Opened from file://, a root-relative link would be dead: all of them point to the site.
+  it("has only absolute links (« Résultats par équipes », logo, tabs…)", () => {
+    const saved = render(true);
+    expect(saved).not.toMatch(/(href|action|src)="\//);
+    expect(saved).toContain('href="https://orgasport.fr/c/7KQ2/equipes"');
+    expect(saved).toContain('<a class="brand" href="https://orgasport.fr/">');
+  });
+
   // The captain form of a remembered team is left out of the file (not only hidden by CSS).
   it("contains no form, input or button even for a remembered team with a game to score", () => {
     expect(render(true)).not.toMatch(/<form|<input|<button/);

@@ -445,6 +445,8 @@ export function renderTerrainPage(t: RenderInput, opts: { fragment: boolean; sta
   const teams = buildTeamViews(t.state, t.meta.name_display);
   const venues = new Map(Object.values(t.state.venues).map((v) => [v.id, v.label]));
   const code = t.meta.short_code!;
+  // In the saved file (opened from file://) every link points to the live site.
+  const site = opts.standalone ? (opts.origin ?? "") : "";
   const ctx: Ctx = {
     m,
     t,
@@ -453,7 +455,7 @@ export function renderTerrainPage(t: RenderInput, opts: { fragment: boolean; sta
     venues,
     mineIds: new Set(),
     rememberedId: null,
-    base: `/c/${code}`,
+    base: `${site}/c/${code}`,
     saved: opts.standalone === true,
   };
   const mineTeam = t.mine ? [...teams.values()].find((x) => x.number === t.mine) : undefined;
@@ -492,14 +494,14 @@ ${head}
 <body data-code="${code}" data-ws="${wsUrl}">
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="/">Orga<b>Sport</b></a><span class="code">${code}</span>
+    <a class="brand" href="${site}/">Orga<b>Sport</b></a><span class="code">${code}</span>
     <h1>${t.meta.name}</h1>
     <p class="meta">${[t.sport.name, format, t.meta.city].filter(Boolean).join(" · ")} · ${formatDay(t.meta.starts_at)}</p>
     ${saved ? "" : registerLink(t)}
   </header>
   ${
     saved
-      ? html`<p class="msg">${fmt(tm.saved.note, { day: formatDay(t.now.toISOString()), time: formatTime(t.now.toISOString()) })} <a href="${opts.origin ?? ""}/c/${code}">${tm.saved.live}</a></p>`
+      ? html`<p class="msg">${fmt(tm.saved.note, { day: formatDay(t.now.toISOString()), time: formatTime(t.now.toISOString()) })} <a href="${site}/c/${code}">${tm.saved.live}</a></p>`
       : html`<p class="offline" role="status">${tm.offline}</p>
   <form class="find" method="get" action="/c/${code}" role="search">
     <label for="q">${tm.findLabel}</label>
