@@ -518,7 +518,18 @@ function Players({ on, t }: { on: ArrayLike<number>; t: number }) {
   const mesh = useMemo(() => {
     const geo = new THREE.CapsuleGeometry(0.12, 1.1, 2, 6);
     geo.translate(0, 0.67, 0);
-    const mat = new THREE.MeshBasicMaterial({ color: "#ffffff", toneMapped: false });
+    const mat = new THREE.MeshBasicMaterial({ color: "#ffffff", toneMapped: false, transparent: true });
+    // A stick cut by the camera's near plane shows a hexagon that turns bright or
+    // hollow from one frame to the next (seen in the 9:16 cut, wider field of view):
+    // sticks fade out smoothly before they reach the lens.
+    mat.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying float vNearFade;")
+        .replace("#include <project_vertex>", "#include <project_vertex>\nvNearFade = smoothstep(0.8, 2.0, -mvPosition.z);");
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nvarying float vNearFade;")
+        .replace("#include <color_fragment>", "#include <color_fragment>\ndiffuseColor.a *= vNearFade;");
+    };
     const m = new THREE.InstancedMesh(geo, mat, 128);
     m.frustumCulled = false;
     for (let i = 0; i < 128; i++) m.setColorAt(i, new THREE.Color(i % 4 < 2 ? C.accentInk : C.blueInk));
