@@ -26,6 +26,9 @@
   --color-success: var(--os-success);
   --color-warning: var(--os-warning);
   --color-danger: var(--os-danger);
+  --color-success-soft: var(--os-success-soft);
+  --color-warning-soft: var(--os-warning-soft);
+  --color-danger-soft: var(--os-danger-soft);
   --color-on-status: var(--os-on-status);
   --font-display: var(--font-display);
   --font-body: var(--font-body);

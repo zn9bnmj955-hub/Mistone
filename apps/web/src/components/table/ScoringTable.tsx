@@ -75,7 +75,7 @@ export function ScoringTable({ code }: { code: string }) {
 
   return (
     <div data-sport={sport?.accentToken} className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-line bg-bg">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <LogoMark size={28} />
           <div className="grid min-w-0 flex-1">
@@ -89,8 +89,8 @@ export function ScoringTable({ code }: { code: string }) {
             aria-live="polite"
             className={cn(
               "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-black",
-              connection === "online" && "bg-success/15 text-success",
-              connection === "syncing" && "bg-warning/15 text-warning",
+              connection === "online" && "bg-success-soft text-success",
+              connection === "syncing" && "bg-warning-soft text-warning",
               connection === "offline" && "bg-danger text-on-status",
             )}
           >
@@ -135,7 +135,7 @@ export function ScoringTable({ code }: { code: string }) {
       <main id="contenu" className="mx-auto grid max-w-6xl gap-4 px-4 py-4">
         {pending > 0 && <p className="text-sm font-bold text-warning">{t.pendingHint}</p>}
         {table.notice && (
-          <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] bg-danger/10 p-3 font-bold text-danger">
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] bg-danger-soft p-3 font-bold text-danger">
             {errorText(table.notice.code, table.notice.details)}
             <Btn tone="ghost" onClick={table.clearNotice}>
               {m.common.close}

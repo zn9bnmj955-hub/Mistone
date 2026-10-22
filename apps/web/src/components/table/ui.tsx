@@ -14,7 +14,7 @@ export function Btn({ tone = "default", className, ...props }: ComponentProps<"b
       className={cn(
         "inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-base font-bold transition disabled:cursor-not-allowed disabled:opacity-40",
         tone === "primary" && "bg-accent text-on-accent hover:brightness-105",
-        tone === "danger" && "border-2 border-danger text-danger hover:bg-danger/10",
+        tone === "danger" && "border-2 border-danger text-danger hover:bg-danger-soft",
         tone === "ghost" && "text-ink-soft hover:bg-surface-2 hover:text-ink",
         tone === "default" && "border-2 border-ink bg-surface text-ink hover:bg-surface-2",
         className,

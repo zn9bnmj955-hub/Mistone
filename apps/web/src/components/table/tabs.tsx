@@ -57,7 +57,7 @@ export function StatusControls({ table, state }: TabProps) {
         ))}
       </div>
       {held && (
-        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border-2 border-warning/60 bg-warning/10 p-3">
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border-2 border-warning bg-warning-soft p-3">
           <span className="grid">
             <strong className="text-lg">{p.title}</strong>
             <span className="text-sm">{pause ? fmt(p.text, { teams: pause.teams }) : p.reopened}</span>
@@ -88,7 +88,7 @@ export function CloseLinkPanel({ table, state }: TabProps) {
   const [checked, setChecked] = useState(false);
   if (state.tournament.status !== "finished") return null;
   return (
-    <section aria-labelledby="close-link-title" className="mt-10 grid gap-3 rounded-[var(--radius-lg)] border-2 border-dashed border-danger/50 p-4">
+    <section aria-labelledby="close-link-title" className="mt-10 grid gap-3 rounded-[var(--radius-lg)] border-2 border-dashed border-danger p-4">
       <h2 id="close-link-title" className="text-lg font-black">
         {t.title}
       </h2>
@@ -218,7 +218,7 @@ export function CheckInTab({ table, state, teamSize }: TabProps & { teamSize: nu
     const status = team.status;
     const late = drawn && status === "checked_in" && !inDraw.has(team.id);
     return (
-      <li key={team.id} className={cn("flex flex-wrap items-center gap-3 rounded-[var(--radius)] border-2 p-3", status === "checked_in" ? "border-success/60 bg-success/5" : status === "forfeit" ? "border-danger/40 opacity-70" : "border-line")}>
+      <li key={team.id} className={cn("flex flex-wrap items-center gap-3 rounded-[var(--radius)] border-2 p-3", status === "checked_in" ? "border-success bg-success-soft" : status === "forfeit" ? "border-danger opacity-70" : "border-line")}>
         <span className="w-12 text-2xl font-black tabular">{team.number}</span>
         <span className="grid min-w-0 flex-1">
           <span className="truncate text-lg font-bold">{v?.label}</span>
@@ -373,7 +373,7 @@ export function DrawTab({ table, state }: TabProps) {
         }}
         className={cn(
           "min-h-11 w-full rounded-[var(--radius-sm)] px-2 text-left font-bold disabled:cursor-default",
-          selected ? "bg-accent text-on-accent" : swapFrom && swappable ? "bg-accent-soft hover:bg-accent/40" : "",
+          selected ? "bg-accent text-on-accent" : swapFrom && swappable ? "bg-accent-soft hover:ring-2 hover:ring-inset hover:ring-accent" : "",
           match.winner === side && "underline decoration-2 underline-offset-4",
         )}
         title={swappable ? t.swap : undefined}
@@ -423,7 +423,7 @@ export function DrawTab({ table, state }: TabProps) {
       )}
       {brackets.map((b) => (collectsEntries(state, b) ? <EntriesPanel key={`entries-${b}`} table={table} state={state} bracket={b} /> : null))}
       {leftOut.length > 0 && (
-        <div role="status" className="rounded-[var(--radius)] border-2 border-warning/60 bg-warning/10 p-3">
+        <div role="status" className="rounded-[var(--radius)] border-2 border-warning bg-warning-soft p-3">
           <p className="font-bold">{fmt(t.leftOut, { count: leftOut.length })}</p>
           <p className="text-ink-soft">{leftOut.map((x) => teams.get(x.id)?.label ?? `#${x.number}`).join(" · ")}</p>
           <p className="text-sm text-ink-soft">{t.leftOutHint}</p>
@@ -830,7 +830,7 @@ export function HistoryTab({ table, code, version }: { table: ScoringTable; code
   if (actions.length === 0) return <p className="text-ink-soft">{t.empty}</p>;
   return (
     <div className="grid gap-3">
-      {conflict && <p className="rounded-[var(--radius)] bg-danger/10 p-3 font-bold text-danger">{conflict}</p>}
+      {conflict && <p className="rounded-[var(--radius)] bg-danger-soft p-3 font-bold text-danger">{conflict}</p>}
       <ul className="grid gap-2">
         {actions.map((a) => (
           <li key={a.id} className={cn("flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-line p-3", a.undone_at && "opacity-50")}>
@@ -933,7 +933,7 @@ export function AccessTab({ code, isAccount, tournamentName }: { code: string; i
           </Btn>
         </form>
         {created && (
-          <div className="grid gap-2 rounded-[var(--radius)] bg-success/10 p-3">
+          <div className="grid gap-2 rounded-[var(--radius)] bg-success-soft p-3">
             <p className="text-lg font-black text-success">{created}</p>
             {sheet && (
               <>

@@ -35,6 +35,11 @@
   --os-success: #0a6b3d;
   --os-warning: #8a5200;
   --os-danger: #c4221a;
+  /* Fonds « doux » des états : couleurs PLEINES (pas de transparence, donc pas de
+     color-mix) pour rester lisibles sur Chrome/Edge 109. Texte de l'état dessus : AA. */
+  --os-success-soft: #e2ede8;
+  --os-warning-soft: #f1eae0;
+  --os-danger-soft: #f8e4e4;
   --os-focus: #1f5bff;
   --os-on-status: #ffffff;   /* texte sur live, succès, alerte, danger */
   /* Impression (papier) : identiques en clair et en sombre, donc non redéfinis plus bas */
@@ -64,6 +69,9 @@
     --os-success: #3ddc8a;
     --os-warning: #ffb547;
     --os-danger: #ff6b61;
+    --os-success-soft: #132e2a;
+    --os-warning-soft: #302820;
+    --os-danger-soft: #301d24;
     --os-focus: #7c9dff;
     --os-on-status: #04060c;
     color-scheme: dark;
@@ -87,6 +95,9 @@
   --os-success: #3ddc8a;
   --os-warning: #ffb547;
   --os-danger: #ff6b61;
+  --os-success-soft: #132e2a;
+  --os-warning-soft: #302820;
+  --os-danger-soft: #301d24;
   --os-focus: #7c9dff;
   --os-on-status: #04060c;
   color-scheme: dark;
@@ -143,6 +154,9 @@
   --os-success: #3ddc8a;
   --os-warning: #ffb547;
   --os-danger: #ff6b61;
+  --os-success-soft: #132e2a;
+  --os-warning-soft: #302820;
+  --os-danger-soft: #301d24;
   --os-focus: #7c9dff;
   --os-on-status: #04060c;
   color-scheme: dark;
