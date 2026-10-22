@@ -82,7 +82,7 @@ const notificationTemplatesSchema = z.object({
   tournamentStarting: z.string(),
   reminderDayBefore: z.string(),
   notCheckedIn: z.string(),
-  /** Team qualified « d'office » (one-sided match after the cadrage). Placeholders: {round} */
+  /** Team qualified « d'office » (one-sided match after the cadrage). Placeholders: {round} (may open the message: it is capitalised). */
   office: z.string(),
   /** Team entered a B or C bracket on its own (« opt_in »). Placeholders: {bracket} */
   bracketEntry: z.string(),

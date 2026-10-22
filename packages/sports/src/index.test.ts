@@ -131,3 +131,12 @@ describe("notification templates", () => {
     expect(formatTemplate("{a} {b}", { a: 1 })).toBe("1 {b}");
   });
 });
+
+describe("pétanque « d'office » message", () => {
+  it("names the round skipped first, with or without the bracket", () => {
+    expect(formatTemplate(petanque.notifications.office, { round: "cadrage" })).toBe("cadrage : qualifiés d'office pour le tour suivant, pas de partie à jouer.");
+    expect(formatTemplate(petanque.notifications.office, { round: "concours B, cadrage" })).toBe(
+      "concours B, cadrage : qualifiés d'office pour le tour suivant, pas de partie à jouer.",
+    );
+  });
+});

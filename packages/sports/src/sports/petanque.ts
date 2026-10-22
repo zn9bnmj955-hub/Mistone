@@ -86,7 +86,7 @@ export const petanque: SportConfigInput = {
     tournamentStarting: "Jet du but à {time}. Bonne partie !",
     reminderDayBefore: "Demain : {tournament} à {time}, {place}.",
     notCheckedIn: "Votre équipe n'est pas encore pointée. Passez à la table de marque avant {time}.",
-    office: "Qualifiés d'office pour le tour suivant ({round}) : pas de partie à jouer.",
+    office: "{round} : qualifiés d'office pour le tour suivant, pas de partie à jouer.",
     bracketEntry: "Inscription au {bracket} confirmée.",
     paused: "Fin de la journée. Reprise demain : le prochain tirage sera publié sur la page du concours.",
   },

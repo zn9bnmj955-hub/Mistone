@@ -56,10 +56,12 @@ export function renderBody(sport: SportConfig, kind: NotificationKind, vars: Tem
   const values: Record<string, string | number> = { venueLabel: venueLabel(sport) };
   for (const [k, v] of Object.entries(vars)) if (v !== undefined && v !== null) values[k] = v;
   // Unknown placeholders would show as "{x}": drop them and tidy separators.
-  return formatTemplate(template, values)
+  const body = formatTemplate(template, values)
     .replace(/\{\w+\}/g, "")
     .replace(/\s*·\s*(·\s*)+/g, " · ")
     .replace(/\s*·\s*$/, "")
     .replace(/\s{2,}/g, " ")
     .trim();
+  // A placeholder may open the message (« Cadrage : qualifiés d'office… »).
+  return body.charAt(0).toUpperCase() + body.slice(1);
 }

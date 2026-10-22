@@ -145,7 +145,7 @@ describe("cadrage, Office, B/C and pause", () => {
     expect(draw.teamIds).toHaveLength(6);
     expect(draw.teamIds).not.toContain(office[0]!.teamIds[0]);
     expect(renderBody(requireSport("petanque"), "office", { round: roundText(after, round, m) })).toBe(
-      "Qualifiés d'office pour le tour suivant (cadrage) : pas de partie à jouer.",
+      "Cadrage : qualifiés d'office pour le tour suivant, pas de partie à jouer.",
     );
     expect(renderBody(requireSport("petanque"), "draw_published", { round: roundText(after, round, m) })).toBe("Tirage publié : cadrage.");
   });
@@ -364,7 +364,7 @@ describe("B4 — cases checked by the tester", () => {
         expect(draw.teamIds).not.toContain(e.teamIds[0]);
         expect(events.some((x) => x.kind === "your_turn" && after.matches[x.matchId]!.roundId === round.id && x.teamIds.includes(e.teamIds[0]!))).toBe(false);
         expect(renderBody(requireSport("petanque"), "office", { round: roundText(after, round, m) })).toBe(
-          "Qualifiés d'office pour le tour suivant (concours B, cadrage) : pas de partie à jouer.",
+          "Concours B, cadrage : qualifiés d'office pour le tour suivant, pas de partie à jouer.",
         );
       }
       const keys = events.map((x) => x.key);
