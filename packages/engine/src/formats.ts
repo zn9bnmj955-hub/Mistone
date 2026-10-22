@@ -664,18 +664,39 @@ function pausePending(state: EngineState): boolean {
 }
 
 /**
+ * True when the A's round before the pause has already been played to the end
+ * once: every match of it has a result, except matches reopened since (a
+ * reopened match keeps the moment it started but waits for a pitch again,
+ * which a match never played never does), and at least one was reopened.
+ * The pause was reached; only a correction made it pending again. Derived
+ * from the state, nothing stored. Call only when pausePending is true.
+ */
+function pauseReachedBefore(state: EngineState): boolean {
+  const format = state.tournament.config.format;
+  const phase: Phase = state.tournament.config.pause === "afterPools" ? "pool"
+    : format === "pools_then_bracket" ? "final" : format === "swiss" ? "swiss" : format === "melee_rotation" ? "melee" : "elimination";
+  const rounds = phase === "pool" ? roundsOf(state, "main", "pool") : [lastRound(state, "main", phase)!];
+  const ms = rounds.flatMap((r) => matchesOfRound(state, r.id));
+  const reopened = (m: Match) => !isFinished(m) && m.startedAt !== null && (m.status === "waiting_venue" || m.status === "ready");
+  return ms.some(reopened) && ms.every((m) => isFinished(m) || reopened(m));
+}
+
+/**
  * Draws that happen on their own once the previous round is over (never the
  * first one). The two-day pause stops all of them: the B and the C wait with the A.
  * While the A plays its last round before the pause, the B and the C go on as
- * usual, except a draw that was already waiting before this action: it was
- * held by the pause, and a day-1 match of the A reopened during the night
- * (round no longer complete, pausedAt null) must not release it.
+ * usual, except once that round was played to the end and a match of it was
+ * reopened during the night (round no longer complete, pausedAt null): the
+ * pause was reached, so no draw of the B or the C happens until the resume,
+ * even after a score of the B or the C corrected meanwhile. A draw that was
+ * already waiting before the action stays held too.
  */
 export function autoAdvance(tx: Transaction, ctx: DrawContext): void {
   const cfg = tx.state.tournament.config;
   for (let guard = 0; guard < 6; guard++) {
     if (pausedAt(tx.state)) return;
     const pending = pausePending(tx.state);
+    const reached = pending && pauseReachedBefore(tx.state);
     let drew = false;
     const mainStarted = Object.values(tx.state.rounds).some((r) => r.bracket === "main");
     if (cfg.autoNextRound && mainStarted && canDrawNext(tx.state, "main")) {
@@ -687,7 +708,7 @@ export function autoAdvance(tx: Transaction, ctx: DrawContext): void {
     for (const [bracket, tag] of [["consolation", "autoc"], ["consolation_c", "autocc"]] as const) {
       const started = roundsOf(tx.state, bracket).length > 0;
       const auto = started ? cfg.autoNextRound : bracketSettings(tx.state, bracket).entry === "auto";
-      if (pending && canDrawNext(tx.base, bracket)) continue;
+      if (pending && (reached || canDrawNext(tx.base, bracket))) continue;
       if (auto && canDrawNext(tx.state, bracket)) {
         drawNext(tx, { ...ctx, seed: `${ctx.seed}:${tag}${guard}` }, bracket);
         drew = true;
