@@ -2,7 +2,7 @@
 
 SaaS de gestion de concours sportifs. Un club achète un « lien concours » (`/c/7KQ2`) qui gère inscriptions, tirage, terrains, scores et résultats. Lancement pétanque, **multi-sport dès le départ**.
 
-> État : **les 8 phases du plan sont terminées** (socle, moteur + lien concours, espace clubs + paiement, catalogue + inscription en ligne, fil + notifications, assistant IA, vidéos, finitions). Mise en ligne : `docs/DEPLOIEMENT.md`.
+> État : **les 8 phases du plan sont terminées** (socle, moteur + lien concours, espace clubs + paiement, catalogue + inscription en ligne, fil + notifications, assistant IA, vidéos, finitions). Le **lot 2** (demandes du propriétaire, `docs/LOT2-PLAN.md`) a ajouté cadrage, concours B/C, 2 jours, clôture et suppression des données, pétanque seule, fiche bénévole. Mise en ligne : `docs/DEPLOIEMENT.md`.
 > Plan validé : `docs/PLAN.md`. Direction visuelle : **C « Direct »**, couleurs **bleu et noir** (choix du propriétaire), vitrine futuriste (scène 3D nocturne, néons bleus). Démo : `docs/DEMO.md`.
 
 ## Organisation du travail (perfectionnement)
@@ -55,9 +55,11 @@ apps/web                  Next.js
   src/app/c/[code]        lien concours PUBLIC : route.ts = HTML serveur léger (pas de React côté client)
     score/ affiche/ qr.svg/   saisie capitaines (formulaire POST), affiche A4, QR code
     inscription/ calendrier.ics   inscription en ligne (sans JS), fichier agenda
+    equipes/              « Résultats par équipes » (HTML léger) ; `?enregistrer=1` sur /c/CODE = fichier hors ligne
     table/                table de marque (page Next + client hors ligne)
   src/app/api/t/[code]/*  API table de marque : state, commands, undo, history, pin, staff
-  src/app/api/cron/tick   chaque minute : tirages à l'heure, rappels, envoi des notifications (CRON_SECRET)
+  src/app/api/cron/tick   chaque minute : tirages à l'heure, rappels, envoi des notifications, clôture 24 h
+                          après la finale, purge des données (CRON_SECRET)
   src/app/api/cron/news   chaque heure : flux RSS des actualités
   src/app/api/stripe/webhook  seule porte de publication d'un concours payé (signature vérifiée)
   src/app/api/assistant   assistant (flux SSE, outils côté serveur, quotas, budget)
@@ -90,7 +92,8 @@ packages/db               types générés, engine-mapping.ts (moteur ↔ tables
 apps/videos               Remotion : découverte (75 s) et tutoriel (150 s), 16:9 et 9:16 → apps/web/public/videos
 supabase/                 config.toml, migrations/, seed.sql (démo, généré), reference.sql (production, généré),
                           templates/ (emails de connexion FR), tests/rls.sql
-docs/                     PLAN.md, DEPLOIEMENT.md (mise en ligne pas à pas), videos/storyboard.md, design/
+docs/                     PLAN.md, LOT2-PLAN.md (lot 2), DEMANDES.md, AUDIT.md, DEPLOIEMENT.md (mise en ligne pas à pas),
+                          DEMO.md, videos/storyboard.md, design/, references/ (modèles de feuilles de tirage)
 ```
 
 ## Règles d'architecture (non négociables)
@@ -109,7 +112,7 @@ docs/                     PLAN.md, DEPLOIEMENT.md (mise en ligne pas à pas), vi
 
 ## Conventions
 - Code et noms techniques en anglais ; **textes d'interface en français dans `src/i18n/fr.ts`**.
-- Statuts concours : `draft → published → registration_closed → check_in → live → finished → archived`.
+- Statuts concours : `draft → published → registration_closed → check_in → live → finished → archived`. `finished` = corrections encore possibles ; `archived` = clos définitivement (`tournament.close`), plus rien n'est accepté, annulation comprise.
 - Codes courts : 4 caractères, alphabet `23456789ABCDEFGHJKMNPQRSTUVWXYZ` (sans 0/O/1/I/L), générés par la base.
 - Heures affichées à la française : « 15 h 40 » (`lib/format.ts`, fuseau Europe/Paris).
 - Préférences de l'appareil (invités compris) en cookies `os_prefs`, `os_sport`, `os_onboarded` → le serveur personnalise dès le premier rendu.
@@ -149,11 +152,11 @@ CGV, mentions légales, confidentialité, cookies (pages vides `/legal/*` + tabl
 - « Mon tirage » ouvre directement le prochain match si le joueur connecté joue un concours en cours (`?saisir=1` pour forcer la saisie d'un code).
 - Licence : vérification du format uniquement (regex par sport), jamais affichée publiquement.
 - Logo club : bucket public `club-logos`, envoi par le serveur après contrôle d'appartenance (2 Mo max).
-- Phase 2 — formats : élimination avec **nouveau tirage à chaque tour** par défaut en pétanque (tableau fixe en option) ; un exempt par tour impair, jamais deux fois la même équipe si possible ; en tableau fixe les exempts vont aux mieux placés pour atteindre une puissance de 2.
-- Phase 2 — complémentaire : perdants d'**un** tour choisi (`consolation.losersOfRound`, 1 par défaut) ; en poules, les non-qualifiés. Tiré automatiquement dès que ce tour est complet.
+- Phase 2 — formats : élimination avec **nouveau tirage à chaque tour** par défaut en pétanque (tableau fixe en option) ; un exempt par tour impair, jamais deux fois la même équipe si possible ; en tableau fixe les exempts vont aux mieux placés pour atteindre une puissance de 2. (Remplacé en pétanque par le **cadrage** du lot 2, voir plus bas.)
+- Phase 2 — complémentaire : perdants d'**un** tour choisi (`consolation.losersOfRound`, 1 par défaut) ; en poules, les non-qualifiés. Tiré automatiquement dès que ce tour est complet. (Devenu le concours B du lot 2.)
 - Phase 2 — poules : poules de 4 « en 3 parties » (gagnants / perdants / barrage) pour la pétanque, chacun contre chacun pour le foot ; poules de 3 quand le nombre ne tombe pas juste ; 2 qualifiés par poule ; phase finale en tableau fixe, vainqueurs de poule têtes de série, jamais deux équipes d'une même poule au 1er tour.
 - Phase 2 — mêlée tournante : nouvelles équipes à chaque partie en évitant les mêmes partenaires ; les joueurs en surnombre sont exempts (comptés comme victoire) à tour de rôle.
-- Phase 2 — forfait et exempt : score de forfait par défaut = cible du sport à 0 (13–0 en pétanque, 3–0 en foot), configurable (`forfeitScore`).
+- Phase 2 — forfait et exempt : score de forfait par défaut = cible du sport à 0 (13–0 en pétanque, 3–0 en foot), configurable (`forfeitScore`). Lot 2 : l'exempt a son propre score (`byeScore`, 13–7 en pétanque).
 - Phase 2 — terrains : file « premier arrivé, premier servi » ; terrains réservés utilisables seulement à partir des demi-finales du tableau principal (`reservedVenuesFrom`) ; foot = créneaux horaires (aucune équipe sur deux matchs à la fois).
 - Phase 2 — corrections : changer un vainqueur est accepté tant que les matchs suivants concernés ne sont pas joués (sinon message « annulez d'abord… ») ; en poules, refusé si le tableau final est déjà tiré et que les qualifiés changeraient.
 - Phase 2 — scores capitaines : option `scoreEntry: "captains"` ; code équipe à 4 chiffres (`team_secrets`, visible par la table de marque et sur la liste imprimée) ; validé si les deux capitaines saisissent le même score, sinon « à vérifier » par la table.
@@ -170,3 +173,17 @@ CGV, mentions légales, confidentialité, cookies (pages vides `/legal/*` + tabl
 - Couleurs : bleu et noir uniquement (accent bleu électrique, football en bleu cyan) ; rouge/vert/orange réservés aux états. L'accueil est une scène sombre dans les deux thèmes (`[data-scheme="stage"]` dans tokens.css).
 - Phase 8 — accueil : scène 3D plein écran (boulodrome néon, caméra liée au défilement et au pointeur), boule de pétanque réaliste **sans aucune marque** (acier satiné, rainures, rayures) ↔ ballon, en three.js, chargée après l'affichage, seulement si l'appareil est assez puissant, sans « réduire les animations » ni économie de données ; sinon images fixes pré-rendues (`public/vitrine/*.webp`, `scripts/render-hero-balls.mjs`). En-têtes de sécurité sur toutes les routes (`next.config.ts`). Tâches planifiées en production : Supabase `pg_cron` + `pg_net` (voir `docs/DEPLOIEMENT.md`).
 - Emails de connexion Supabase en français : `supabase/templates/` (générés par `scripts/build-auth-emails.ts`), à copier dans le tableau de bord Supabase en production.
+
+## Décisions du lot 2 (`docs/LOT2-PLAN.md`)
+- **Pétanque seule** : `enabled: false` dans `packages/sports/src/sports/football.ts` (code du football conservé, filtré par `enabledSports()`). Réactiver = remettre `enabled: true`, `pnpm --filter @orgasport/db reference:gen`, relancer `reference.sql` en production, puis revoir les tests e2e « pétanque seule ».
+- **Cadrage** (`config.cadrage.afterRound`, 1 par défaut) : avant, tirage intégral au hasard (un exempt si nombre impair, score 13–7) ; au cadrage, si T équipes n'est pas une puissance de 2 (P = la plus grande en dessous), T−P parties et 2P−T équipes qualifiées d'office, affichées face à « **Office** » (partie « bye » à un seul côté, tour `rounds.kind = 'cadrage'`). Ensuite toujours une puissance de 2 (un double forfait crée des places d'office). Même règle pour la phase finale après poules, le B et le C. « Même club évité » seulement au premier tirage de chaque tableau.
+- **Concours B et C** : B = perdants de la 1re partie du A (sans l'exempt) ou non-qualifiés des poules ; C = perdants de la 1re partie du B, possible seulement si le B a au moins 4 équipes. Inscription `auto` (défaut pétanque : B activé, C désactivé) ou `opt_in` : seules les équipes inscrites par `team.enterBracket` jouent, 1er tirage manuel par la table, droit d'inscription affiché à titre d'information (aucun paiement en ligne).
+- **N.H.** : club des joueurs public (`players.club_number`, `club_name`) ; même club pour tous = « (n°/CLUB) », clubs différents = « (N.H.) » sans contrainte de club au tirage (`teamAffiliation`).
+- **2 jours** : `config.pause` (`{before: {remaining}}`, `"afterPools"`, `{afterRound}`) ; aucun tirage automatique du A, du B ni du C tant que la table n'a pas fait « Reprendre le concours » (`tournament.resume`) ou un tirage manuel. Le statut reste `live`, aucune heure de fin calculée. Une partie du dernier tour rouverte la nuit met ce tour au statut **`live`** (= joué jusqu'au bout puis rouvert, affiché comme « tiré ») : la pause tient toujours (`isPauseHeld`, bandeau « Concours en pause » de la table). « Reprise demain » n'est envoyé qu'aux équipes encore en lice.
+- **Lien à usage unique** : en `finished`, seules les corrections (score, forfait, réouverture, annulation) ; bouton « Clore définitivement » ou clôture automatique **24 h** après `tournaments.finished_at` (`/api/cron/tick`) ; en `archived` tout est refusé (inscriptions, scores des capitaines, table de marque, abonnements push), avec un message clair.
+- **Suppression des données** : `purge_finished_tournaments()` (SQL, idempotente) **14 jours** après la finale d'un concours clos, et en filet **6 mois** après le début de tout concours publié (clos d'office) : joueurs, contacts, codes d'équipe, PIN, historique, notifications et abonnements ; noms d'équipes anonymisés. Gardés : paiements, factures, ligne `tournaments` (code jamais réattribué). La page publique affiche « Résultats supprimés ». Production : pg_cron chaque nuit + `/api/cron/tick` (voir `docs/DEPLOIEMENT.md`).
+- **PIN bénévole** : explication en 3 étapes (créer, donner, saisir) là où on crée le PIN et sur l'écran de saisie ; « PIN de la table » unique proposé par défaut ; fiche à imprimer (QR code vers `/c/CODE/table` sans le PIN dans l'adresse, PIN en grand).
+- **Hors ligne** : pages terrain gardées par le service worker (dernier tirage reçu, page des équipes) ; bouton « Enregistrer pour hors ligne » = fichier `.html` autonome (CSS intégré, sans script ni formulaire, daté, liens absolus vers le site) ; impression façon feuilles de résultats. Table de marque : rechargeable sans réseau après une 1re ouverture en ligne ; navigateurs visés par Next 16 : Chrome/Edge 111, Firefox 111, Safari 16.4 et plus — plus ancien (Windows 7 : Chrome 109 au mieux) = feuilles imprimées.
+- **Aucune heure de fin** ni estimation de durée affichée nulle part.
+- **Base de connaissances datée** : chaque fiche porte une date (« Fiche d'aide à jour au … », « règlement en vigueur au … ») ; `reference.sql` ne date une fiche d'aide que si son texte en base est exactement l'actuel (empreinte md5) et n'écrase jamais un texte modifié dans l'admin ; alerte dans `/admin/assistant` pour un règlement non relu depuis 12 mois. Pas de recherche web.
+- **Démo** : pétanque uniquement, plus de FT8S. Les concours terminés de la démo n'ont pas de `finished_at` : ils ne sont jamais clos ni purgés automatiquement.
