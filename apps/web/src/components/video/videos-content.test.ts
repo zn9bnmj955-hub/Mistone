@@ -108,4 +108,11 @@ describe("videos: weight of the rendered files", () => {
     expect(existsSync(path)).toBe(true);
     expect(statSync(path).size).toBeLessThanOrEqual(BEFORE[file] * 1.1);
   });
+
+  // A file left from lot 1 (football tile, grooved ball, old draws) still has the
+  // exact weight of lot 1: every video and its poster must have been rendered again.
+  const POSTERS_BEFORE: Record<string, number> = { "tutoriel-16x9.jpg": 51_725, "tutoriel-9x16.jpg": 42_910 };
+  it.each([...Object.entries(BEFORE), ...Object.entries(POSTERS_BEFORE)])("%s has been rendered again (not the lot 1 file)", (file, size) => {
+    expect(statSync(join(publicVideos, file)).size).not.toBe(size);
+  });
 });
