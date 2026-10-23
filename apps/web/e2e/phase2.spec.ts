@@ -190,8 +190,8 @@ test.describe("scoring table", () => {
 
     await page.goto("/c/GP3M");
     await expect(page.locator("table tbody tr")).toHaveCount(3);
-    // This tournament shows initials only: "Marie Sur-Place" → "M. S.".
-    await expect(page.getByText("M. S.").first()).toBeVisible();
+    // This tournament shows initials only, in « NOM PRÉNOM » order: "Marie Sur-Place" → "S. M.".
+    await expect(page.getByText("S. M.").first()).toBeVisible();
     await expect(page.getByText("Sur-Place")).toHaveCount(0);
   });
 });
