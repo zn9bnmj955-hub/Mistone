@@ -206,7 +206,11 @@ function SceneSetup() {
 export function Cam({ pos, look, fog }: { pos: V3; look: V3; fog?: number }) {
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
-  camera.position.set(...pos);
+  // The spline between two keys can overshoot below the floor (a dive from high up to
+  // a low shot): the camera then saw the boulodrome from underneath for a few frames,
+  // a big blue sheet. Its height is softly kept above the floor (unchanged above 0.6).
+  const y = pos[1] >= 0.6 ? pos[1] : 0.35 + 0.25 * Math.exp((pos[1] - 0.6) / 0.25);
+  camera.position.set(pos[0], y, pos[2]);
   camera.lookAt(...look);
   if (fog !== undefined && scene.fog instanceof THREE.FogExp2) scene.fog.density = fog;
   return null;
