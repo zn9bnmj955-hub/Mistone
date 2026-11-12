@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getMessages } from "@/i18n";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { safeInternalPath } from "@/lib/safe-path";
 
 export const metadata: Metadata = { title: getMessages().auth.loginTitle };
 
@@ -11,7 +12,7 @@ async function Content({ searchParams }: { searchParams: Search }) {
   const m = getMessages().auth;
   const { mode, next, erreur } = await searchParams;
   const signup = mode === "signup";
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/accueil";
+  const safeNext = safeInternalPath(next);
   return (
     <div className="grid gap-6 pt-6">
       <h1 className="display text-5xl">{signup ? m.signupTitle : m.loginTitle}</h1>

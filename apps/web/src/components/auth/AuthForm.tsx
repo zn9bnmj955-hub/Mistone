@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Icon } from "@orgasport/ui";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { env } from "@/lib/env";
+import { safeInternalPath } from "@/lib/safe-path";
 import { fmt, getMessages } from "@/i18n";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
@@ -45,7 +46,8 @@ export function AuthForm({
   const [captchaToken, setCaptchaToken] = useState<string | undefined>();
   const onToken = useCallback((t: string) => setCaptchaToken(t), []);
 
-  const redirectTo = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  const target = () => safeInternalPath(next, window.location.origin);
+  const redirectTo = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(target())}`;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,7 +87,7 @@ export function AuthForm({
 
   function done() {
     if (onSignedIn) onSignedIn();
-    else window.location.assign(next);
+    else window.location.assign(target());
   }
 
   async function oauth(provider: "google" | "apple") {
