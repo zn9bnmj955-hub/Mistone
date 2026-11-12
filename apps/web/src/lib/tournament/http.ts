@@ -34,6 +34,11 @@ export async function rateLimited(key: string, max: number, windowSeconds: numbe
   return data === true;
 }
 
+/** Gives back one hit counted by rateLimit (e.g. a PIN attempt that turned out right). */
+export async function refundRateLimit(key: string): Promise<void> {
+  await createAdminClient().rpc("refund_rate_limit", { p_key: key });
+}
+
 export async function findTournamentRow(rawCode: string) {
   const code = normalizeShortCode(rawCode);
   if (!isShortCode(code)) return null;

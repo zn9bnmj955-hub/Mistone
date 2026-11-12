@@ -862,6 +862,9 @@ isOneToOne: false
 "rate_limit_exceeded":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
                            },
+"refund_rate_limit":
+{ Args: { "p_key": string }; Returns: undefined
+                           },
 "register_team_private":
 { Args: { "p": Json,"p_team": string }; Returns: undefined
                            },

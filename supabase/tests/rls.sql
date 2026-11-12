@@ -790,5 +790,40 @@ exception when insufficient_privilege then null;
 end $$;
 select pg_temp.reset();
 
+-- Tâche 3: PIN attempts are reserved atomically then refunded on success;
+-- only the server may refund.
+do $$ declare ok boolean; begin
+  perform set_config('role', 'service_role', true);
+  for i in 1..8 loop ok := public.hit_rate_limit('test:pin', 8, 900); end loop;
+  if not ok or public.hit_rate_limit('test:pin', 8, 900) then
+    raise exception 'PIN: the 9th attempt of a device must be refused';
+  end if;
+  perform public.refund_rate_limit('test:pin');
+  perform public.refund_rate_limit('test:pin');
+  if (select count from public.rate_limits where key = 'test:pin') <> 7 then
+    raise exception 'PIN: refund_rate_limit must give one attempt back';
+  end if;
+  delete from public.rate_limits where key = 'test:pin';
+  perform public.refund_rate_limit('test:pin');
+  if exists (select 1 from public.rate_limits where key = 'test:pin') then
+    raise exception 'PIN: refunding an unknown key must do nothing';
+  end if;
+  perform set_config('role', 'postgres', true);
+end $$;
+select pg_temp.as_anon();
+do $$ begin
+  perform public.refund_rate_limit('x');
+  raise exception 'anon refunded a rate limit';
+exception when insufficient_privilege then null;
+end $$;
+select pg_temp.reset();
+select pg_temp.as_user('club@demo.orgasport.fr');
+do $$ begin
+  perform public.refund_rate_limit('x');
+  raise exception 'a signed-in user refunded a rate limit';
+exception when insufficient_privilege then null;
+end $$;
+select pg_temp.reset();
+
 \echo 'RLS checks passed'
 rollback;
