@@ -13,6 +13,9 @@ import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { getLiveStats } from "@/lib/data/tournaments";
 import { formatCount } from "@/lib/format";
 
+/** Rank of an element in the arrival cascade (landing.css): on phones, then on wide screens. */
+const step = (phone: number, wide: number = phone) => ({ "--ld-m": phone, "--ld-d": wide }) as CSSProperties;
+
 async function LiveNumbers() {
   const m = getMessages().landing;
   const stats = await getLiveStats();
@@ -23,8 +26,8 @@ async function LiveNumbers() {
   ];
   return (
     <dl className="grid grid-cols-3 gap-2">
-      {items.map((i) => (
-        <div key={i.label} className="rounded-[var(--radius)] border border-line bg-surface p-3">
+      {items.map((i, n) => (
+        <div key={i.label} className={cn(styles.in, "rounded-[var(--radius)] border border-line bg-surface p-3")} style={step(7 + n, 6 + n)}>
           <dd className="display text-4xl tabular sm:text-5xl">{formatCount(i.value)}</dd>
           <dt className="mt-1 flex items-center gap-1.5 text-xs font-bold text-ink-soft sm:text-sm">
             {i.live && <span className="live-dot" aria-hidden="true" />}
@@ -55,7 +58,7 @@ export default function LandingPage() {
     <>
       {/* Transparent, laid over the top of the night stage (the hero slides up under it: landing.css). */}
       <header data-scheme="stage" className={cn(styles.header, "text-ink")}>
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <div className={cn(styles.in, "mx-auto flex max-w-6xl items-center justify-between px-4 py-4")} data-in="drop" style={step(0)}>
           <Link href="/" className="flex items-center gap-2 text-ink" aria-label={m.meta.title}>
             <LogoMark size={30} />
             <Wordmark className="text-2xl" />
@@ -71,10 +74,10 @@ export default function LandingPage() {
             two column wrappers are `display: contents` and `order-*` interleaves their children. */}
         <SportHero
           sports={stageSports}
-          className="mx-auto grid max-w-6xl gap-6 px-4 pb-14 pt-2 lg:min-h-[calc(100svh-4.25rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-x-12 lg:pt-8"
+          className="mx-auto grid max-w-6xl gap-6 px-4 pb-14 pt-2 lg:min-h-[calc(100svh-4.25rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-x-12 lg:pb-20 lg:pt-8"
         >
           <div className="contents lg:col-start-2 lg:row-start-1 lg:grid lg:gap-4">
-            <div className="order-1">
+            <div className={cn(styles.in, "order-1")} data-in="glass" style={step(0, 2)}>
               <FindDrawForm tone="stage" headingLevel="h2" />
             </div>
             <div className="order-3 grid gap-1">
@@ -84,14 +87,14 @@ export default function LandingPage() {
           </div>
           <div className="contents lg:col-start-1 lg:row-start-1 lg:grid lg:gap-6">
             <div className="order-2 grid gap-3">
-              <h1 className="display text-[3.25rem] sm:text-7xl lg:text-[5.25rem]">
+              <h1 className={cn(styles.in, "display text-[3.25rem] sm:text-7xl lg:text-[5.25rem]")} data-in="depth" style={step(1, 0)}>
                 {h.titleLead} <span className={`${styles.highlight} text-accent-ink`}>{h.titleHighlight}</span>
               </h1>
-              <p className="max-w-[46ch] text-lg text-ink-soft">{l.heroText}</p>
+              <p className={cn(styles.in, "max-w-[46ch] text-lg text-ink-soft")} style={step(2, 1)}>{l.heroText}</p>
             </div>
             <ul className="order-4 grid gap-3">
               {doors.map((d, i) => (
-                <li key={d.href} className={styles.rise} style={{ "--rise-delay": `${120 + i * 70}ms` } as CSSProperties}>
+                <li key={d.href} className={styles.in} style={step(4 + i, 3 + i)}>
                   <Link
                     href={d.href}
                     className={cn(
@@ -118,6 +121,10 @@ export default function LandingPage() {
               </Suspense>
             </div>
           </div>
+          <a href="#how" className={cn(styles.cue, styles.in)} style={step(10, 9)}>
+            {l.howTitle}
+            <span className={styles.cueArrow} aria-hidden="true" />
+          </a>
         </SportHero>
         <div className={styles.shore} aria-hidden="true" />
 

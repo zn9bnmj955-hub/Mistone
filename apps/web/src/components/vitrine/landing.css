@@ -181,6 +181,76 @@
   opacity: 0;
 }
 
+/* Blue glow on the floor under the ball (static still and 3D ball alike: the ball hovers above it).
+   Sits under the still image; over the canvas it only touches the floor below the 3D ball. */
+.ld-ballSpot::before {
+  content: "";
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 76%;
+  height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--os-stage-line) 78%, transparent),
+    color-mix(in srgb, var(--os-stage-line) 30%, transparent) 38%,
+    color-mix(in srgb, var(--os-stage-haze) 34%, transparent) 68%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* Bottom of the first screen (wide screens): a quiet way down to « Comment ça marche », so the
+   night under the live numbers is inhabited without adding any height. */
+.ld-cue {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .ld-cue {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2.5rem; /* .ld-shore overlaps the last 2rem of the stage */
+    width: max-content;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    color: var(--os-ink-soft);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ld-cue:hover,
+  .ld-cue:focus-visible {
+    color: var(--os-ink);
+  }
+  /* Neon threads on both sides of the label. */
+  .ld-cue::before,
+  .ld-cue::after {
+    content: "";
+    width: 4.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--os-stage-line));
+  }
+  .ld-cue::after {
+    background: linear-gradient(90deg, var(--os-stage-line), transparent);
+  }
+  .ld-cueArrow {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: -0.25rem 0 0 0.125rem;
+    border-right: 2px solid var(--os-accent-ink);
+    border-bottom: 2px solid var(--os-accent-ink);
+    transform: rotate(45deg);
+  }
+}
+
 /* ---- « Retrouver mon tirage »: dark glass card with a neon edge ------------- */
 /* FindDrawForm tone="stage". The scene shows through, blurred; without backdrop-filter the
    glass is simply more opaque, so the text keeps its AA contrast over the neon grid. */
@@ -291,9 +361,65 @@
       ld-underline-in 0.7s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
-  .ld-rise {
-    animation: ld-rise 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: var(--rise-delay, 0ms);
+  /* Arrival, in cascade. The stage lights up first (horizon drawn from its centre, floor unfolding
+     towards the viewer like a drone taking height), then the content comes out of the depth one
+     piece every 70 ms, in reading order: --ld-m = rank on phones, --ld-d = rank on wide screens.
+     Transform and opacity only: the compositor keeps the cascade smooth while the 3D scene
+     compiles on the main thread. The title starts half visible and the ball still never fades
+     (LCP). The parts that the 3D swap fades out (.ld-floor, .ld-horizon, .ld-stars) only animate
+     transform, or an inner element, so both effects never fight over opacity. */
+  .ld-horizon {
+    animation: ld-horizon-in 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .ld-floor svg {
+    transform-origin: 50% 0;
+    animation: ld-floor-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .ld-stars {
+    transform-origin: 50% 100%;
+    animation: ld-stars-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .ld-in {
+    --ld-step: var(--ld-m, 0);
+    animation: ld-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(90ms + var(--ld-step) * 70ms);
+  }
+  @media (min-width: 64rem) {
+    .ld-in {
+      --ld-step: var(--ld-d, var(--ld-m, 0));
+    }
+  }
+  .ld-in[data-in="depth"] {
+    transform-origin: 0 100%;
+    animation-name: ld-depth;
+    animation-duration: 0.8s;
+  }
+  /* The glass card fades on the element that carries backdrop-filter: fading a parent would
+     switch the blur off until the end of the fade. */
+  .ld-in[data-in="glass"] {
+    animation: none;
+  }
+  .ld-in[data-in="glass"] .ld-find {
+    animation: ld-glass 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(90ms + var(--ld-step) * 70ms);
+  }
+  .ld-in[data-in="drop"] {
+    animation-name: ld-drop;
+  }
+  .ld-ballSpot::before {
+    animation:
+      ld-halo-in 0.9s 0.38s cubic-bezier(0.16, 1, 0.3, 1) both,
+      ld-halo-breathe 5s 1.4s ease-in-out infinite alternate;
+  }
+  .ld-find::before {
+    animation: ld-tube-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(360ms + var(--ld-step, 0) * 70ms);
+  }
+  .ld-cue {
+    transition: color 0.2s ease;
+  }
+  .ld-cueArrow {
+    animation: ld-cue-bob 1.8s 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
   }
 
   .ld-findField,
@@ -373,11 +499,106 @@
   @keyframes ld-rise {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(18px);
     }
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+  @keyframes ld-depth {
+    /* The title comes forward out of the night. Never below half opacity: it is the main text. */
+    from {
+      opacity: 0.5;
+      transform: translateY(22px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ld-glass {
+    /* Fades in place: the code field is the first thing people tap, it must not move under the finger. */
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes ld-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ld-horizon-in {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes ld-floor-in {
+    from {
+      opacity: 0;
+      transform: scaleY(0.45);
+    }
+    45% {
+      opacity: 1;
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ld-stars-in {
+    from {
+      transform: scale(1.12);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes ld-halo-in {
+    from {
+      opacity: 0;
+      transform: scale(0.3, 0.6);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ld-halo-breathe {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.72;
+    }
+  }
+  @keyframes ld-tube-in {
+    from {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ld-cue-bob {
+    from {
+      transform: rotate(45deg);
+    }
+    to {
+      transform: translateY(4px) rotate(45deg);
     }
   }
 }

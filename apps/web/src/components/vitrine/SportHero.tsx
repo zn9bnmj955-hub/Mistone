@@ -22,6 +22,9 @@ import styles from "./landingStyles";
 
 type Mode = "static" | "loading" | "3d";
 
+/** Length of the arrival cascade of landing.css, counted from the first paint. */
+const ARRIVAL_MS = 1500;
+
 type HeroState = {
   mode: Mode;
   anchorRef: RefObject<HTMLDivElement | null>;
@@ -99,12 +102,20 @@ export function SportHero({ sports, className, children }: { sports: StageSport[
     });
     observer.observe(section);
 
-    // Idle = after the load event, when the main thread has nothing better to do.
+    // Idle = after the load event and the arrival cascade (landing.css), when the main thread has
+    // nothing better to do: compiling the scene never stutters the entrance animations.
     const onLoad = () => {
-      cancelIdle = whenIdle(window, () => {
-        idle = true;
-        start();
-      });
+      const painted = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? performance.now();
+      const timer = window.setTimeout(
+        () => {
+          cancelIdle = whenIdle(window, () => {
+            idle = true;
+            start();
+          });
+        },
+        Math.max(0, painted + ARRIVAL_MS - performance.now()),
+      );
+      cancelIdle = () => window.clearTimeout(timer);
     };
     if (document.readyState === "complete") onLoad();
     else window.addEventListener("load", onLoad, { once: true });
