@@ -131,6 +131,7 @@
   position: relative; /* overlaps the stage's empty bottom padding (already plain night there) */
   height: 7rem;
   margin-top: -2rem;
+  background: linear-gradient(to bottom, var(--os-stage), var(--os-bg)); /* browsers without color-mix() */
   background:
     linear-gradient(
       to bottom,
