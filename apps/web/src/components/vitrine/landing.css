@@ -449,7 +449,8 @@
   transform: scaleY(-1);
 }
 .ld-band {
-  --ld-horizon: calc(100% - 8.5rem); /* sky behind the text, a strip of neon floor under the button */
+  --ld-ground: 8.5rem; /* height of the strip of neon floor under the button */
+  --ld-horizon: calc(100% - var(--ld-ground)); /* sky behind the text */
   --ld-span: 150px; /* short runs: the end of the page must be able to finish them */
   --ld-lag: 20px;
   position: relative;
@@ -461,7 +462,8 @@
 }
 @media (min-width: 48rem) {
   .ld-band {
-    padding: 5rem 0 13.5rem;
+    --ld-ground: 13rem; /* wide screens: a taller strip, or only the far, tightly meshed ground would show */
+    padding: 5rem 0 17.5rem;
   }
 }
 .ld-bandSky {
@@ -478,6 +480,13 @@
 .ld-bandFloor {
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, transparent 96%);
   mask-image: linear-gradient(to bottom, transparent, #000 30%, transparent 96%);
+}
+@media (min-width: 48rem) {
+  /* The far ground, where the lanes crowd together, stays in the haze of the horizon. */
+  .ld-bandFloor {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 6%, #000 52%, transparent 96%);
+    mask-image: linear-gradient(to bottom, transparent 6%, #000 52%, transparent 96%);
+  }
 }
 .ld-bandButton {
   box-shadow:
@@ -628,10 +637,11 @@
      scroll position (no script). Browsers without scroll-driven animations skip the whole block
      and show everything in place. A run starts when the element's top edge enters the screen and
      lasts a fixed scroll distance (--ld-span), later for each rank (--ld-i): any element followed
-     by at least that much page is sure to end fully visible. */
+     by at least that much page is sure to end fully visible. Nothing readable stays invisible
+     more than 60px inside the screen, and everything is fully opaque 300px in at the latest. */
   @supports (animation-timeline: view()) {
     .ld-reveal,
-    .ld-step::before,
+    .ld-step:not(:last-child)::before,
     .ld-stepNode {
       animation: ld-reveal cubic-bezier(0.2, 0.7, 0.3, 1) both;
       animation-timeline: view();
@@ -640,28 +650,35 @@
     .ld-stepNode {
       animation-name: ld-node-in;
     }
-    /* The line is drawn once its stop is there, towards the next one. */
+    /* Stacked on phones, each stop enters the screen on its own: no extra lag. The line is drawn
+       once its stop is there, towards the next one. */
+    .ld-step {
+      --ld-lag: 0px;
+    }
     .ld-step:not(:last-child)::before {
       animation-name: ld-line-down;
-      animation-range: entry calc(100px + var(--ld-i, 0) * var(--ld-lag, 40px)) entry calc(340px + var(--ld-i, 0) * var(--ld-lag, 40px));
+      animation-range: entry 60px entry 260px;
     }
     @media (min-width: 48rem) {
-      /* Side by side: the stops stay level (the line joins them), they only fade in, one after the other. */
-      .ld-step {
+      /* Side by side: the stops stay level (the line joins them) and only fade in. They start
+         almost together (20, 40, 60px) and finish one after the other (180, 240, 300px). */
+      .ld-step,
+      .ld-step .ld-stepNode {
         --ld-rise: 0px;
-        --ld-lag: 70px;
+        animation-range: entry calc(var(--ld-i, 0) * 20px) entry calc(120px + var(--ld-i, 0) * 60px);
       }
       .ld-step:not(:last-child)::before {
         animation-name: ld-line-across;
-        animation-range: entry calc(60px + var(--ld-i, 0) * var(--ld-lag)) entry calc(260px + var(--ld-i, 0) * var(--ld-lag));
+        animation-range: entry calc(40px + var(--ld-i, 0) * 60px) entry calc(180px + var(--ld-i, 0) * 60px);
       }
     }
-    /* The last stage lights up like the first one: horizon drawn from its centre, floor unfolding. */
+    /* The last stage lights up like the first one: horizon drawn from its centre, floor unfolding.
+       A run in px (the horizon is 1px high), short enough for the end of the page to finish it. */
     .ld-band .ld-horizon,
     .ld-band .ld-floor svg {
       animation-timing-function: linear;
       animation-timeline: view();
-      animation-range: entry 0% entry 100%;
+      animation-range: entry 0px entry 200px;
     }
     .ld-band .ld-stars {
       animation: none;
@@ -841,7 +858,9 @@
 @media print {
   .ld-reveal,
   .ld-stepNode,
-  .ld-step::before {
+  .ld-step:not(:last-child)::before,
+  .ld-band .ld-horizon,
+  .ld-band .ld-floor svg {
     animation: none;
   }
 }
