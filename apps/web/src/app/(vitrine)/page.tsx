@@ -75,7 +75,7 @@ export default function LandingPage() {
         >
           <div className="contents lg:col-start-2 lg:row-start-1 lg:grid lg:gap-4">
             <div className="order-1">
-              <FindDrawForm headingLevel="h2" />
+              <FindDrawForm tone="stage" headingLevel="h2" />
             </div>
             <div className="order-3 grid gap-1">
               <BallSpot description={h.ballDescription} />

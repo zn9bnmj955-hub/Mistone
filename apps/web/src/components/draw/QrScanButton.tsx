@@ -12,7 +12,7 @@ type Detector = { detect: (source: CanvasImageSource) => Promise<{ rawValue: str
  * BarcodeDetector when available, otherwise loads a small decoder on demand.
  * Hidden until JavaScript runs (the form works without it).
  */
-export function QrScanButton({ labels }: { labels: Labels }) {
+export function QrScanButton({ labels, className }: { labels: Labels; className?: string }) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
@@ -120,7 +120,7 @@ export function QrScanButton({ labels }: { labels: Labels }) {
           setMessage(null);
           setOpen(true);
         }}
-        className="grid min-h-14 w-14 place-items-center rounded-[var(--radius)] bg-accent text-on-accent"
+        className={className ?? "grid min-h-14 w-14 place-items-center rounded-[var(--radius)] bg-accent text-on-accent"}
         aria-label={labels.scan}
         title={labels.scan}
       >

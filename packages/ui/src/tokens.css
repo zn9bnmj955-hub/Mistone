@@ -23,6 +23,7 @@
   --os-stage-deep: #070b18;     /* scène 3D : brume au-dessus de l'horizon */
   --os-stage-haze: #12307a;     /* scène 3D : halo de l'horizon */
   --os-stage-line: #3d6bff;     /* scène 3D : quadrillage néon du terrain */
+  --os-stage-glass: #0a1230;    /* scène 3D : teinte des cartes en verre sombre (rendue translucide sur place) */
 
   /* Accent par défaut (sélecteur sur « Tous ») */
   --os-accent: #1f5bff;
