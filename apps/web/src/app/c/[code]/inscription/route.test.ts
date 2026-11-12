@@ -21,7 +21,7 @@ vi.mock("@/lib/tournament/load", () => ({
   }),
 }));
 vi.mock("@/lib/tournament/register", async (orig) => ({ ...(await orig<typeof import("@/lib/tournament/register")>()), registerOnline }));
-vi.mock("@/lib/tournament/http", () => ({ clientIp: () => "1.2.3.4", rateLimit }));
+vi.mock("@/lib/tournament/http", () => ({ clientAddress: () => "1.2.3.4", clientIp: () => "1.2.3.4", rateLimit }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ auth: { getClaims: async () => ({ data: null }) } }) }));
 vi.mock("@/lib/supabase/public", () => ({ createPublicClient: () => ({}) }));
 vi.mock("@/lib/turnstile", () => ({ turnstileSiteKey: () => null, verifyTurnstile: async () => true }));

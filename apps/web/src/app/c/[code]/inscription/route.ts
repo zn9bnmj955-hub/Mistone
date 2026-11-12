@@ -7,7 +7,7 @@ import { sendEmail } from "@/lib/email";
 import { formatDay, formatTime } from "@/lib/format";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
-import { clientIp, rateLimit } from "@/lib/tournament/http";
+import { clientAddress, clientIp, rateLimit } from "@/lib/tournament/http";
 import { loadTournament, type LoadedTournament } from "@/lib/tournament/load";
 import { registerOnline, registrationWindow, teamShape, validateRegistration, type RegistrationIssue } from "@/lib/tournament/register";
 import { turnstileSiteKey, verifyTurnstile } from "@/lib/turnstile";
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest, { params }: Ctx) {
   const ip = clientIp(request);
   const [okIp, okTournament] = await Promise.all([rateLimit(`reg:ip:${ip}`, 10, 600), rateLimit(`reg:t:${code}`, 300, 3600)]);
   if (!okIp || !okTournament) return page(loaded, { values: parsed.values, notice: m.window.limited, signedIn }, 429);
-  if (!(await verifyTurnstile(parsed.turnstileToken, ip))) {
+  if (!(await verifyTurnstile(parsed.turnstileToken, clientAddress(request)))) {
     return page(loaded, { values: parsed.values, notice: m.window.robot, signedIn }, 400);
   }
 
