@@ -355,6 +355,136 @@
     0 0 1.75rem color-mix(in srgb, var(--os-stage-line) 75%, transparent);
 }
 
+/* ---- Below the stage: three stops on one neon line ------------------------ */
+.ld-steps {
+  --ld-node: 3.5rem;
+  --ld-gap: 2.25rem;
+  display: grid;
+  row-gap: var(--ld-gap);
+}
+.ld-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--ld-node) minmax(0, 1fr);
+  column-gap: 1.125rem;
+  align-items: start;
+}
+.ld-stepNode {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--ld-node);
+  height: var(--ld-node);
+  border: 2px solid var(--os-accent);
+  border-radius: 50%;
+  background: var(--os-surface);
+  color: var(--os-accent-ink);
+  font-size: 1.875rem;
+  line-height: 1;
+  box-shadow: 0 0 0 5px var(--os-accent-soft);
+  box-shadow:
+    0 0 0 5px var(--os-accent-soft),
+    0 0 1.5rem -0.125rem color-mix(in srgb, var(--os-accent) 65%, transparent);
+}
+/* The line leaves each stop for the next one: downwards on phones, to the right on wide screens. */
+.ld-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--ld-node) / 2 - 1px);
+  top: calc(var(--ld-node) + 5px);
+  bottom: calc(-1 * var(--ld-gap) + 5px);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--os-accent);
+  box-shadow: 0 0 0.75rem var(--os-accent);
+  transform-origin: 0 0;
+}
+@media (min-width: 48rem) {
+  .ld-steps {
+    --ld-gap: 2.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--ld-gap);
+  }
+  .ld-step {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1.25rem;
+    justify-items: center;
+    text-align: center;
+  }
+  .ld-step:not(:last-child)::before {
+    left: calc(50% + var(--ld-node) / 2 + 5px);
+    top: calc(var(--ld-node) / 2 - 1px);
+    bottom: auto;
+    width: calc(100% - var(--ld-node) + var(--ld-gap) - 10px);
+    height: 2px;
+  }
+}
+
+/* ---- Video: a lit screen, its blue light spilling on the page -------------- */
+.ld-screen {
+  position: relative;
+  isolation: isolate;
+}
+.ld-screen::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 4%;
+  right: 4%;
+  top: 3rem;
+  height: 0;
+  padding-bottom: 46%;
+  border-radius: 50%;
+  background: var(--os-accent);
+  opacity: 0.5;
+  filter: blur(3rem);
+  pointer-events: none;
+}
+
+/* ---- Last band: back on the night stage ----------------------------------- */
+/* Page background → night, the mirror of .ld-shore (same dusk tint in the light theme, no band
+   at all in the dark one). */
+.ld-shoreDown {
+  margin-top: 0;
+  transform: scaleY(-1);
+}
+.ld-band {
+  --ld-horizon: calc(100% - 8.5rem); /* sky behind the text, a strip of neon floor under the button */
+  --ld-span: 150px; /* short runs: the end of the page must be able to finish them */
+  --ld-lag: 20px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  overflow: clip; /* not a scroll container: the reveals inside follow the page's scroll */
+  padding: 3.5rem 0 12.5rem;
+  background: var(--os-stage);
+}
+@media (min-width: 48rem) {
+  .ld-band {
+    padding: 5rem 0 13.5rem;
+  }
+}
+.ld-bandSky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--os-stage) 0%, var(--os-stage-deep) var(--ld-horizon), var(--os-stage) 100%);
+  background:
+    radial-gradient(60% 9rem at 50% var(--ld-horizon), color-mix(in srgb, var(--os-stage-haze) 80%, transparent), transparent 72%),
+    linear-gradient(to bottom, var(--os-stage) 0%, var(--os-stage-deep) var(--ld-horizon), var(--os-stage) 100%);
+}
+/* The floor sinks into the night before the footer (same plain black on both sides). */
+.ld-bandFloor {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, transparent 96%);
+  mask-image: linear-gradient(to bottom, transparent, #000 30%, transparent 96%);
+}
+.ld-bandButton {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--os-on-stage) 35%, transparent),
+    0 0 2rem -0.25rem color-mix(in srgb, var(--os-stage-line) 85%, transparent);
+}
+
 /* ---- Expressive title ----------------------------------------------------- */
 .ld-highlight {
   background-image: linear-gradient(var(--os-accent), var(--os-accent));
@@ -494,6 +624,85 @@
     transform: translateX(5px);
   }
 
+  /* Below the stage, things appear as they scroll into view: a progressive bonus tied to the
+     scroll position (no script). Browsers without scroll-driven animations skip the whole block
+     and show everything in place. A run starts when the element's top edge enters the screen and
+     lasts a fixed scroll distance (--ld-span), later for each rank (--ld-i): any element followed
+     by at least that much page is sure to end fully visible. */
+  @supports (animation-timeline: view()) {
+    .ld-reveal,
+    .ld-step::before,
+    .ld-stepNode {
+      animation: ld-reveal cubic-bezier(0.2, 0.7, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--ld-i, 0) * var(--ld-lag, 40px)) entry calc(var(--ld-span, 220px) + var(--ld-i, 0) * var(--ld-lag, 40px));
+    }
+    .ld-stepNode {
+      animation-name: ld-node-in;
+    }
+    /* The line is drawn once its stop is there, towards the next one. */
+    .ld-step:not(:last-child)::before {
+      animation-name: ld-line-down;
+      animation-range: entry calc(100px + var(--ld-i, 0) * var(--ld-lag, 40px)) entry calc(340px + var(--ld-i, 0) * var(--ld-lag, 40px));
+    }
+    @media (min-width: 48rem) {
+      /* Side by side: the stops stay level (the line joins them), they only fade in, one after the other. */
+      .ld-step {
+        --ld-rise: 0px;
+        --ld-lag: 70px;
+      }
+      .ld-step:not(:last-child)::before {
+        animation-name: ld-line-across;
+        animation-range: entry calc(60px + var(--ld-i, 0) * var(--ld-lag)) entry calc(260px + var(--ld-i, 0) * var(--ld-lag));
+      }
+    }
+    /* The last stage lights up like the first one: horizon drawn from its centre, floor unfolding. */
+    .ld-band .ld-horizon,
+    .ld-band .ld-floor svg {
+      animation-timing-function: linear;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+    .ld-band .ld-stars {
+      animation: none;
+    }
+
+    @keyframes ld-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(var(--ld-rise, 28px));
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    @keyframes ld-node-in {
+      from {
+        transform: scale(0.6);
+      }
+      to {
+        transform: none;
+      }
+    }
+    @keyframes ld-line-down {
+      from {
+        transform: scaleY(0);
+      }
+      to {
+        transform: none;
+      }
+    }
+    @keyframes ld-line-across {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: none;
+      }
+    }
+  }
+
   @keyframes ld-ball-pop {
     /* Transform only: an opacity fade would delay the LCP of the ball still. */
     from {
@@ -625,5 +834,14 @@
     to {
       transform: translateY(4px) rotate(45deg);
     }
+  }
+}
+
+/* On paper there is no scroll position: nothing waits to appear. */
+@media print {
+  .ld-reveal,
+  .ld-stepNode,
+  .ld-step::before {
+    animation: none;
   }
 }

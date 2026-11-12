@@ -6,6 +6,10 @@ import "./landing.css";
  */
 const styles = {
   backdrop: "ld-backdrop",
+  band: "ld-band",
+  bandButton: "ld-bandButton",
+  bandFloor: "ld-bandFloor",
+  bandSky: "ld-bandSky",
   ballSpot: "ld-ballSpot",
   canvasHost: "ld-canvasHost",
   cue: "ld-cue",
@@ -18,8 +22,14 @@ const styles = {
   highlight: "ld-highlight",
   horizon: "ld-horizon",
   in: "ld-in",
+  reveal: "ld-reveal",
+  screen: "ld-screen",
   shore: "ld-shore",
+  shoreDown: "ld-shoreDown",
   stars: "ld-stars",
+  step: "ld-step",
+  stepNode: "ld-stepNode",
+  steps: "ld-steps",
   still: "ld-still",
   veil: "ld-veil",
 } as const;

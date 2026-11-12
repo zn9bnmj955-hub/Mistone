@@ -177,7 +177,7 @@ const FLOOR_PATH = (() => {
   return parts.join("");
 })();
 
-function StaticFloor() {
+export function StaticFloor() {
   return (
     <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMin slice" focusable="false">
       <path d={FLOOR_PATH} fill="none" stroke="currentColor" strokeWidth="1.4" strokeOpacity="0.7" vectorEffect="non-scaling-stroke" />
