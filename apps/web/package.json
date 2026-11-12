@@ -27,7 +27,7 @@
     "fast-xml-parser": "^5.11.2",
     "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
-    "next": "16.4.0",
+    "next": "16.4.5",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@next/env": "16.4.0",
+    "@next/env": "16.4.5",
     "@playwright/test": "1.56.1",
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",
@@ -51,7 +51,7 @@
     "@types/web-push": "^3.6.4",
     "acorn": "8.19.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7"
