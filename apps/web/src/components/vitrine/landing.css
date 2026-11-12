@@ -200,6 +200,18 @@
   );
   pointer-events: none;
 }
+/* The still picture already carries its own painted glow: a softer core there, centred on the
+   painted one (one disc, no hot spot). */
+.ld-hero:not([data-ball="3d"]) .ld-ballSpot::before {
+  translate: 0 -50%; /* glides back under the 3D ball during the swap (transition below) */
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--os-stage-line) 46%, transparent),
+    color-mix(in srgb, var(--os-stage-line) 20%, transparent) 38%,
+    color-mix(in srgb, var(--os-stage-haze) 30%, transparent) 68%,
+    transparent
+  );
+}
 
 /* Bottom of the first screen (wide screens): a quiet way down to « Comment ça marche », so the
    night under the live numbers is inhabited without adding any height. */
@@ -419,6 +431,7 @@
     animation-name: ld-drop;
   }
   .ld-ballSpot::before {
+    transition: translate 0.9s ease;
     animation:
       ld-halo-in 0.9s 0.38s cubic-bezier(0.16, 1, 0.3, 1) both,
       ld-halo-breathe 5s 1.4s ease-in-out infinite alternate;

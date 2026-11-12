@@ -194,7 +194,7 @@ export function BallSpot({ description, className }: { description: string; clas
   return (
     <div ref={anchorRef} className={cn(styles.ballSpot, className)} role="img" aria-label={description}>
       {/* eslint-disable-next-line @next/next/no-img-element -- a fixed, pre-sized still: no optimizer round trip */}
-      <img src={STILL} alt="" width={560} height={560} decoding="async" className={styles.still} />
+      <img src={STILL} alt="" width={560} height={560} decoding="async" fetchPriority="high" className={styles.still} />
     </div>
   );
 }
