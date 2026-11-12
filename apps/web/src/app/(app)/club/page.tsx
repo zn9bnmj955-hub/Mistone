@@ -36,7 +36,7 @@ function TournamentRow({ t, children, counts = true }: { t: DashboardTournament;
   const m = getMessages();
   const sport = getSport(t.sport_slug);
   return (
-    <li data-sport={sport?.accentToken} className="grid gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4">
+    <li data-sport={sport?.accentToken} className="grid gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 card-depth">
       <div className="flex items-start gap-3">
         <span className="mt-0.5 text-accent-ink">
           <Icon name={sport?.icon ?? "all"} />

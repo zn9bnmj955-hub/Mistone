@@ -90,9 +90,63 @@
     border-radius: 999px;
     background: var(--os-live);
   }
+  /* Relief des cartes (jetons --shadow-card et --os-glow de tokens.css).
+     .card-depth : carte posée, ombre au repos.
+     .card-lift  : carte cliquable — bordure accent + halo néon au survol et au focus clavier. */
+  .card-depth,
+  .card-lift {
+    box-shadow: var(--shadow-card);
+  }
+  .card-lift {
+    position: relative;
+  }
+}
+
+/* États des cartes cliquables, hors calque : ils passent devant la bordure de repos (border-line). */
+@media (hover: hover) {
+  .card-lift:hover {
+    border-color: var(--os-accent);
+    box-shadow: var(--os-glow);
+  }
+}
+.card-lift:focus-visible {
+  border-color: var(--os-accent);
+  box-shadow: var(--os-glow);
+}
+/* Carte dont le lien étiré porte le focus (règle à part : :has() absent des vieux navigateurs). */
+.card-lift:has(a:focus-visible) {
+  border-color: var(--os-accent);
+  box-shadow: var(--os-glow);
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .card-lift {
+    transition:
+      transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 0.16s ease-out,
+      background-color 0.16s ease-out;
+  }
+  /* Bande invisible sous la carte : le pointeur posé sur le bord bas ne fait pas trembler la carte soulevée. */
+  .card-lift::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 4px;
+  }
+  @media (hover: hover) {
+    .card-lift:hover {
+      transform: translateY(-2px);
+    }
+  }
+  .card-lift:focus-visible {
+    transform: translateY(-2px);
+  }
+  .card-lift:has(a:focus-visible) {
+    transform: translateY(-2px);
+  }
   .live-dot {
     animation: live-pulse 1.6s ease-in-out infinite;
   }

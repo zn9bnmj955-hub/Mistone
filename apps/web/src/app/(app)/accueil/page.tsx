@@ -54,7 +54,7 @@ async function ClubBlock({ viewer }: { viewer: Viewer }) {
                 <Link
                   href={`/club/concours/${x.id}`}
                   data-sport={sport?.accentToken}
-                  className="flex min-h-12 items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 hover:border-ink-soft"
+                  className="flex min-h-12 items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 card-lift"
                 >
                   <Icon name={sport?.icon ?? "all"} />
                   <span className="grid min-w-0 flex-1">

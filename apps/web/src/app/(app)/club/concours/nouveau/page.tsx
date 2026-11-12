@@ -82,7 +82,7 @@ async function Start() {
                   <Link
                     href={`/club/concours/${d.id}/modifier`}
                     data-sport={sport?.accentToken}
-                    className="flex min-h-16 items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 hover:border-ink-soft"
+                    className="flex min-h-16 items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 card-lift"
                   >
                     <Icon name={sport?.icon ?? "all"} className="shrink-0 text-accent-ink" />
                     <span className="grid min-w-0 flex-1">

@@ -26,8 +26,8 @@ export function ChoiceCard({
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "group flex min-h-20 w-full items-center gap-4 rounded-[var(--radius-lg)] border-2 p-4 text-left transition",
-        selected ? "border-accent bg-accent-soft" : "border-line bg-surface hover:border-ink-soft",
+        "group flex min-h-20 w-full items-center gap-4 rounded-[var(--radius-lg)] border-2 p-4 text-left card-lift",
+        selected ? "border-accent bg-accent-soft" : "border-line bg-surface",
       )}
     >
       {icon && (

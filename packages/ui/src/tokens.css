@@ -30,6 +30,9 @@
   --os-accent-ink: #1a47d1;  /* accent utilisé comme texte sur le fond */
   --os-on-accent: #ffffff;
   --os-accent-soft: rgba(31, 91, 255, 0.12);
+  /* Relief des cartes : ombre au repos, halo néon de l'accent au survol et au focus clavier */
+  --shadow-card: 0 1px 2px rgba(10, 12, 20, 0.05), 0 6px 16px -8px rgba(10, 12, 20, 0.14);
+  --os-glow: 0 0 0 1px rgba(31, 91, 255, 0.5), 0 2px 4px rgba(10, 12, 20, 0.05), 0 14px 30px -10px rgba(31, 91, 255, 0.42);
 
   /* États (indépendants du sport) */
   --os-live: #b0140d;
@@ -66,6 +69,8 @@
     --os-accent-ink: #7c9dff;
     --os-on-accent: #04060c;
     --os-accent-soft: rgba(77, 124, 255, 0.2);
+    --shadow-card: inset 0 1px 0 rgba(238, 242, 255, 0.06), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+    --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5);
     --os-live: #ff6a60;
     --os-success: #3ddc8a;
     --os-warning: #ffb547;
@@ -92,6 +97,8 @@
   --os-accent-ink: #7c9dff;
   --os-on-accent: #04060c;
   --os-accent-soft: rgba(77, 124, 255, 0.2);
+  --shadow-card: inset 0 1px 0 rgba(238, 242, 255, 0.06), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+  --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5);
   --os-live: #ff6a60;
   --os-success: #3ddc8a;
   --os-warning: #ffb547;
@@ -117,6 +124,7 @@
   --os-accent-ink: #1a47d1;
   --os-on-accent: #ffffff;
   --os-accent-soft: rgba(31, 91, 255, 0.12);
+  --os-glow: 0 0 0 1px rgba(31, 91, 255, 0.5), 0 2px 4px rgba(10, 12, 20, 0.05), 0 14px 30px -10px rgba(31, 91, 255, 0.42);
 }
 /* Football : « Cyan » */
 [data-sport="football"] {
@@ -124,14 +132,15 @@
   --os-accent-ink: #00609f;
   --os-on-accent: #ffffff;
   --os-accent-soft: rgba(0, 119, 204, 0.14);
+  --os-glow: 0 0 0 1px rgba(0, 119, 204, 0.5), 0 2px 4px rgba(10, 12, 20, 0.05), 0 14px 30px -10px rgba(0, 119, 204, 0.42);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"])[data-sport="petanque"], :root:not([data-theme="light"]) [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; }
-  :root:not([data-theme="light"])[data-sport="football"], :root:not([data-theme="light"]) [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; }
+  :root:not([data-theme="light"])[data-sport="petanque"], :root:not([data-theme="light"]) [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5); }
+  :root:not([data-theme="light"])[data-sport="football"], :root:not([data-theme="light"]) [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(43, 180, 255, 0.55), 0 0 30px -6px rgba(43, 180, 255, 0.5); }
 }
-:root[data-theme="dark"][data-sport="petanque"], :root[data-theme="dark"] [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; }
-:root[data-theme="dark"][data-sport="football"], :root[data-theme="dark"] [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; }
+:root[data-theme="dark"][data-sport="petanque"], :root[data-theme="dark"] [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5); }
+:root[data-theme="dark"][data-sport="football"], :root[data-theme="dark"] [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(43, 180, 255, 0.55), 0 0 30px -6px rgba(43, 180, 255, 0.5); }
 
 /* --------------------------------------------------------------------------
    Îlot « scène » : une zone toujours sombre posée sur la scène 3D noire
@@ -151,6 +160,8 @@
   --os-accent-ink: #7c9dff;
   --os-on-accent: #04060c;
   --os-accent-soft: rgba(77, 124, 255, 0.2);
+  --shadow-card: inset 0 1px 0 rgba(238, 242, 255, 0.06), 0 10px 24px -14px rgba(0, 0, 0, 0.9);
+  --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5);
   --os-live: #ff6a60;
   --os-success: #3ddc8a;
   --os-warning: #ffb547;
@@ -162,8 +173,8 @@
   --os-on-status: #04060c;
   color-scheme: dark;
 }
-[data-scheme="stage"][data-sport="petanque"], [data-scheme="stage"] [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; --os-accent-soft: rgba(77, 124, 255, 0.2); }
-[data-scheme="stage"][data-sport="football"], [data-scheme="stage"] [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; --os-accent-soft: rgba(43, 180, 255, 0.2); }
+[data-scheme="stage"][data-sport="petanque"], [data-scheme="stage"] [data-sport="petanque"] { --os-accent: #4d7cff; --os-accent-ink: #7c9dff; --os-on-accent: #04060c; --os-accent-soft: rgba(77, 124, 255, 0.2); --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(77, 124, 255, 0.55), 0 0 30px -6px rgba(77, 124, 255, 0.5); }
+[data-scheme="stage"][data-sport="football"], [data-scheme="stage"] [data-sport="football"] { --os-accent: #2bb4ff; --os-accent-ink: #5cc6ff; --os-on-accent: #04060c; --os-accent-soft: rgba(43, 180, 255, 0.2); --os-glow: inset 0 1px 0 rgba(238, 242, 255, 0.08), 0 0 0 1px rgba(43, 180, 255, 0.55), 0 0 30px -6px rgba(43, 180, 255, 0.5); }
 
 /* --------------------------------------------------------------------------
    Formes, espacements, typographie (hors couleurs)

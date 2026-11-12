@@ -35,7 +35,7 @@ export function TournamentCard({ t, nowMs }: { t: HomeCard | CatalogCardRow; now
   return (
     <article
       data-sport={sport?.accentToken}
-      className="group relative grid gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 transition hover:border-ink-soft"
+      className="group relative grid gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 card-lift"
     >
       <div className="flex items-start justify-between gap-3">
         <p className="flex min-w-0 items-center gap-2 text-sm font-bold text-ink-soft">

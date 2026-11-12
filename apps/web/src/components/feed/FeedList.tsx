@@ -16,8 +16,12 @@ import { TournamentCard } from "@/components/tournament/TournamentCard";
  * rendered, no client JavaScript.
  */
 
-const CARD = "relative grid gap-1.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 transition hover:border-ink-soft";
-const CARD_ROW = "relative flex items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 transition hover:border-ink-soft";
+const CARD_BASE = "relative grid gap-1.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4";
+/** Whole card is one link: lifts with the accent glow on hover and keyboard focus. */
+const CARD = `${CARD_BASE} card-lift`;
+/** Card with its own links inside (club announcement): resting depth only. */
+const CARD_STATIC = `${CARD_BASE} card-depth`;
+const CARD_ROW = "relative flex items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 card-lift";
 const STRETCHED =
   "after:absolute after:inset-0 after:rounded-[var(--radius-lg)] focus-visible:outline-none focus-visible:after:[outline:3px_solid_var(--os-focus)]";
 
@@ -86,7 +90,7 @@ function Entry({ item, nowMs }: { item: FeedItem; nowMs: number }) {
       return (
         <>
           <Kicker icon="bell" label={t.kicker.announcement} followed={item.followed} />
-          <article data-sport={sport?.accentToken} className={CARD}>
+          <article data-sport={sport?.accentToken} className={CARD_STATIC}>
             <Meta>
               {a.clubSlug ? (
                 <Link href={`/clubs/${a.clubSlug}`} className="hover:text-ink">
