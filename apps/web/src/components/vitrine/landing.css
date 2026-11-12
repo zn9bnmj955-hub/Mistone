@@ -252,20 +252,29 @@
 }
 
 /* ---- « Retrouver mon tirage »: dark glass card with a neon edge ------------- */
-/* FindDrawForm tone="stage". The scene shows through, blurred; without backdrop-filter the
-   glass is simply more opaque, so the text keeps its AA contrast over the neon grid. */
+/* FindDrawForm tone="stage". Nearly opaque tinted glass, so the text keeps its AA contrast over
+   the neon grid. Each color-mix() line follows a plain declaration (browsers without color-mix). */
 .ld-find {
   position: relative;
+  border: 1px solid var(--os-stage-line);
   border: 1px solid color-mix(in srgb, var(--os-stage-line) 60%, transparent);
-  background: color-mix(in srgb, var(--os-stage-glass) 92%, transparent);
+  background: var(--os-stage-glass);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--os-stage-glass) 94%, transparent),
+    color-mix(in srgb, var(--os-stage-glass) 45%, var(--os-stage))
+  ); /* same tint as the blurred glass below: the switch to 3D does not show */
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--os-on-stage) 14%, transparent),
     0 0 0 1px color-mix(in srgb, var(--os-stage) 60%, transparent),
     0 0 2.25rem -0.5rem color-mix(in srgb, var(--os-stage-line) 70%, transparent),
     0 1.5rem 3rem -1.5rem var(--os-stage);
 }
+/* The scene shows through, blurred, only while it is a still picture: over the live 3D canvas
+   (redrawn every frame) the blur would be recomputed continuously, so the card keeps the
+   nearly opaque glass above. */
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .ld-find {
+  .ld-hero:not([data-ball="3d"]) .ld-find {
     background: linear-gradient(
       160deg,
       color-mix(in srgb, var(--os-stage-glass) 66%, transparent),
@@ -287,7 +296,9 @@
   pointer-events: none;
 }
 .ld-findField {
+  border: 1px solid var(--os-accent-ink);
   border: 1px solid color-mix(in srgb, var(--os-accent-ink) 38%, transparent);
+  background: var(--os-stage);
   background: color-mix(in srgb, var(--os-stage) 72%, transparent);
   box-shadow: inset 0 2px 6px color-mix(in srgb, var(--os-stage) 80%, transparent);
   caret-color: var(--os-accent-ink);
@@ -305,6 +316,7 @@
     0 0 1.75rem color-mix(in srgb, var(--os-stage-line) 75%, transparent);
 }
 .ld-findScan {
+  border: 1px solid var(--os-accent-ink);
   border: 1px solid color-mix(in srgb, var(--os-accent-ink) 38%, transparent);
   background: var(--os-accent-soft);
 }

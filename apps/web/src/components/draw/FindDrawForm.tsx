@@ -69,7 +69,7 @@ export function FindDrawForm({
           className={cn("inline-flex min-h-14 items-center gap-1 rounded-[var(--radius)] bg-accent px-4 font-bold text-on-accent", stage && "ld-findSubmit")}
         >
           {m.submit}
-          <span className={stage ? "ld-findArrow" : undefined} style={{ display: "inline-flex" }}>
+          <span className={cn("inline-flex", stage && "ld-findArrow")}>
             <Icon name="arrowRight" size={20} />
           </span>
         </button>
