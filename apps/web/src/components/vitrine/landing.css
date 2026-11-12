@@ -3,12 +3,25 @@
    Every animation and transition lives in prefers-reduced-motion: no-preference. */
 
 /* ---- Hero: night stage (static scene first, the 3D canvas fades in on top) --- */
+/* The site header sits ON the scene: the hero slides up under it (same sky, stars and haze
+   behind the logo, no flat band above the stage). --ld-header = height of that header. */
+.ld-header,
 .ld-hero {
-  --ld-horizon: 15.5rem; /* the 3D camera aligns its horizon on .ld-horizon */
+  --ld-header: 4.25rem;
+}
+.ld-header {
+  position: relative;
+  z-index: 1;
+  min-height: var(--ld-header);
+}
+.ld-hero {
+  --ld-horizon: calc(var(--ld-header) + 15.5rem); /* the 3D camera aligns its horizon on .ld-horizon */
+  margin-top: calc(-1 * var(--ld-header));
+  padding-top: var(--ld-header);
 }
 @media (min-width: 64rem) {
   .ld-hero {
-    --ld-horizon: 34%;
+    --ld-horizon: calc(34% + 0.66 * var(--ld-header)); /* 34 % of the stage below the header */
   }
 }
 
@@ -91,6 +104,52 @@
   .ld-veil {
     background: linear-gradient(90deg, color-mix(in srgb, var(--os-stage) 70%, transparent), transparent 55%);
   }
+}
+
+/* Bottom of the stage: the neon floor (static grid or 3D canvas) sinks into the night instead of
+   being cut by the section edge. */
+.ld-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 13rem;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--os-stage) 22%, transparent) 18%,
+    color-mix(in srgb, var(--os-stage) 62%, transparent) 44%,
+    color-mix(in srgb, var(--os-stage) 90%, transparent) 66%,
+    var(--os-stage) 82% /* plain night on the last 2.3rem: .ld-shore overlaps 2rem of it */
+  );
+}
+
+/* Landing strip between the stage and the page: night → page background, eased. Lives outside
+   the stage island, so --os-bg is the page's own. The neon blue layer is multiplied over the
+   fade: it tints the light theme's fade like a dusk and leaves black untouched, so the dark
+   theme (same black on both sides) shows no band at all. */
+.ld-shore {
+  position: relative; /* overlaps the stage's empty bottom padding (already plain night there) */
+  height: 7rem;
+  margin-top: -2rem;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent,
+      var(--os-stage-line) 30%,
+      color-mix(in srgb, var(--os-stage-line) 70%, transparent) 55%,
+      color-mix(in srgb, var(--os-stage-line) 25%, transparent) 80%,
+      transparent
+    ),
+    linear-gradient(
+      to bottom,
+      var(--os-stage),
+      color-mix(in oklab, var(--os-stage) 88%, var(--os-bg)) 18%,
+      color-mix(in oklab, var(--os-stage) 62%, var(--os-bg)) 42%,
+      color-mix(in oklab, var(--os-stage) 30%, var(--os-bg)) 66%,
+      color-mix(in oklab, var(--os-stage) 9%, var(--os-bg)) 86%,
+      var(--os-bg)
+    );
+  background-blend-mode: multiply, normal;
 }
 
 .ld-ballSpot {

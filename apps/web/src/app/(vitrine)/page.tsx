@@ -53,7 +53,8 @@ export default function LandingPage() {
   ];
   return (
     <>
-      <header data-scheme="stage" className="bg-stage text-ink">
+      {/* Transparent, laid over the top of the night stage (the hero slides up under it: landing.css). */}
+      <header data-scheme="stage" className={cn(styles.header, "text-ink")}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 text-ink" aria-label={m.meta.title}>
             <LogoMark size={30} />
@@ -118,8 +119,9 @@ export default function LandingPage() {
             </div>
           </div>
         </SportHero>
+        <div className={styles.shore} aria-hidden="true" />
 
-        <div className="mx-auto grid max-w-5xl gap-14 px-4 pb-16 pt-14">
+        <div className="mx-auto grid max-w-5xl gap-14 px-4 pb-16 pt-4">
         <section aria-labelledby="how" className="grid gap-6">
           <h2 id="how" className="display text-4xl">{l.howTitle}</h2>
           <ol className="grid gap-4 md:grid-cols-3">
