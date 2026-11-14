@@ -4,11 +4,11 @@ import { enabledSports } from "@orgasport/sports";
 import { Icon, LogoMark, Wordmark } from "@orgasport/ui";
 import { fmt, getMessages } from "@/i18n";
 import { FindDrawForm } from "@/components/draw/FindDrawForm";
+import { ClubBand } from "@/components/vitrine/ClubBand";
 import { SiteFooter } from "@/components/vitrine/SiteFooter";
-import { BallHint, BallSpot, SportHero, StaticFloor } from "@/components/vitrine/SportHero";
+import { BallHint, BallSpot, SportHero } from "@/components/vitrine/SportHero";
 import styles from "@/components/vitrine/landingStyles";
 import { cn } from "@/components/ui/cn";
-import { ButtonLink } from "@/components/ui/Button";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { getLiveStats } from "@/lib/data/tournaments";
 import { formatCount } from "@/lib/format";
@@ -174,27 +174,8 @@ export default function LandingPage() {
           </section>
         </div>
 
-        {/* Back into the night: the page ends on the same stage as the arrival (sky, horizon, neon floor). */}
-        <div className={cn(styles.shore, styles.shoreDown)} aria-hidden="true" />
-        <section data-scheme="stage" aria-labelledby="clubs" className={cn(styles.band, "text-ink")}>
-          <div className={styles.bandSky} aria-hidden="true">
-            <div className={styles.stars} />
-            <div className={styles.horizon} />
-            <div className={cn(styles.floor, styles.bandFloor)}>
-              <StaticFloor />
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-3xl justify-items-center gap-4 px-4 text-center">
-            <h2 id="clubs" className={cn(styles.reveal, "display text-[2.75rem] sm:text-6xl")}>{l.clubCta}</h2>
-            <p className={cn(styles.reveal, "max-w-[40ch] text-lg text-ink-soft")} style={lag(1)}>{l.clubCtaText}</p>
-            <div className={cn(styles.reveal, "mt-3 w-full sm:w-auto")} style={lag(2)}>
-              <ButtonLink href="/inscription/club" size="lg" className={cn(styles.bandButton, "w-full sm:w-auto")}>
-                {l.clubCtaButton}
-                <Icon name="arrowRight" size={22} />
-              </ButtonLink>
-            </div>
-          </div>
-        </section>
+        {/* Back into the night: the page ends on the same stage as the arrival. */}
+        <ClubBand title={l.clubCta} text={l.clubCtaText} button={l.clubCtaButton} />
       </main>
       <div data-scheme="stage" className="bg-bg text-ink">
         <SiteFooter />
