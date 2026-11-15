@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "./cn";
+import { DISABLED_BORDERED, DISABLED_PLAIN } from "./disabled";
 
 type Variant = "primary" | "inverse" | "outline" | "ghost" | "danger";
 type Size = "md" | "lg";
@@ -20,7 +21,7 @@ const SIZES: Record<Size, string> = {
 export function buttonClass(variant: Variant = "primary", size: Size = "md", extra?: string) {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-bold transition",
-    "disabled:cursor-not-allowed disabled:opacity-50",
+    variant === "outline" ? DISABLED_BORDERED : DISABLED_PLAIN,
     VARIANTS[variant],
     SIZES[size],
     extra,

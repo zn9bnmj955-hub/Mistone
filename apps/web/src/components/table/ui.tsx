@@ -4,6 +4,7 @@ import { buildTeamViews, roundLabel, type TeamView } from "@/terrain/view-model"
 import { getMessages } from "@/i18n";
 import { roundLabel as engineRoundLabel, type EngineState, type Round } from "@orgasport/engine";
 import { cn } from "@/components/ui/cn";
+import { DISABLED_BORDERED, DISABLED_PLAIN } from "@/components/ui/disabled";
 
 /** Small building blocks of the scoring table: big, keyboard friendly. */
 
@@ -12,7 +13,8 @@ export function Btn({ tone = "default", className, ...props }: ComponentProps<"b
     <button
       type="button"
       className={cn(
-        "inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-base font-bold transition disabled:cursor-not-allowed disabled:opacity-40",
+        "inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-base font-bold transition",
+        tone === "primary" || tone === "ghost" ? DISABLED_PLAIN : DISABLED_BORDERED,
         tone === "primary" && "bg-accent text-on-accent hover:brightness-105",
         tone === "danger" && "border-2 border-danger text-danger hover:bg-danger-soft",
         tone === "ghost" && "text-ink-soft hover:bg-surface-2 hover:text-ink",

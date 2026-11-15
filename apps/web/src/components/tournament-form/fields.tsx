@@ -3,6 +3,7 @@ import { useId, useState, type ReactNode } from "react";
 import { Icon } from "@orgasport/ui";
 import { getMessages } from "@/i18n";
 import { cn } from "@/components/ui/cn";
+import { DISABLED_BORDERED } from "@/components/ui/disabled";
 
 /**
  * Form controls of the creation form: big touch targets, native inputs
@@ -120,7 +121,7 @@ export function Stepper({
           aria-controls={id}
           disabled={value <= min}
           onClick={() => onChange(clamp(value - step))}
-          className="grid size-12 shrink-0 place-items-center rounded-[var(--radius)] border-2 border-ink text-2xl font-black hover:bg-surface-2 disabled:opacity-40"
+          className={`grid size-12 shrink-0 place-items-center rounded-[var(--radius)] border-2 border-ink text-2xl font-black hover:bg-surface-2 ${DISABLED_BORDERED}`}
         >
           −
         </button>
@@ -155,7 +156,7 @@ export function Stepper({
           aria-controls={id}
           disabled={value >= max}
           onClick={() => onChange(clamp(value + step))}
-          className="grid size-12 shrink-0 place-items-center rounded-[var(--radius)] border-2 border-ink text-2xl font-black hover:bg-surface-2 disabled:opacity-40"
+          className={`grid size-12 shrink-0 place-items-center rounded-[var(--radius)] border-2 border-ink text-2xl font-black hover:bg-surface-2 ${DISABLED_BORDERED}`}
         >
           +
         </button>

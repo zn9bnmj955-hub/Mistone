@@ -4,6 +4,7 @@ import { Icon } from "@orgasport/ui";
 import { fmt, getMessages } from "@/i18n";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/components/ui/cn";
+import { DISABLED_BORDERED } from "@/components/ui/disabled";
 import { MAX_CHARS, type ChatMessage, type ErrorCode } from "@/lib/assistant-client";
 import { chatStore } from "./chat-store";
 import { Markdown } from "./Markdown";
@@ -13,7 +14,7 @@ export type Prefill = { text: string; n: number } | null;
 
 const RETRYABLE = new Set<ErrorCode>(["busy", "unavailable", "offline", "limited"]);
 const CHIP =
-  "inline-flex min-h-12 items-center rounded-full border-2 border-line bg-surface px-4 py-2 text-left text-sm font-bold text-ink transition hover:border-accent hover:bg-accent-soft disabled:opacity-50";
+  `inline-flex min-h-12 items-center rounded-full border-2 border-line bg-surface px-4 py-2 text-left text-sm font-bold text-ink transition hover:border-accent hover:bg-accent-soft ${DISABLED_BORDERED}`;
 
 const currentPage = () => (typeof window === "undefined" ? undefined : window.location.pathname);
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
