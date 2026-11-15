@@ -37,7 +37,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Wordmark className="text-xl" />
           </Link>
         </header>
-        <main id="contenu" className="mx-auto w-full max-w-3xl px-4 pt-5 lg:pt-10">
+        {/* page-enter : entrée douce du contenu à chaque page (globals.css). */}
+        <main id="contenu" className="page-enter mx-auto w-full max-w-3xl px-4 pt-5 lg:pt-10">
           {children}
         </main>
       </div>

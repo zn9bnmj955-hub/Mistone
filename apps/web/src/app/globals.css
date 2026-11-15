@@ -156,6 +156,39 @@
   }
 }
 
+/*
+ * Entrée douce des pages de l'application (AppShell) : les blocs montent de 8 px, l'un après l'autre.
+ * - Les blocs animés sont les enfants du conteneur de chaque page (<main> → conteneur → blocs) :
+ *   <main> garde aussi, cachées, les pages déjà visitées (retour arrière instantané), d'où ce niveau.
+ * - Départ à 50 % d'opacité : le contenu est visible dès la première image (LCP non retardé).
+ * - Aucun JS : à chaque navigation (retour arrière compris) les blocs de la page affichée entrent ;
+ *   un bloc qui arrive plus tard (Suspense) entre de la même façon, ce qui reste en place ne rejoue pas.
+ * - Couche « components » : un utilitaire d'animation (squelette animate-pulse) garde la priorité.
+ * - « backwards » sans état final : aucune transformation ne reste après l'entrée (position: fixed,
+ *   sticky et empilement intacts).
+ */
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    .page-enter > * > * {
+      animation: page-enter 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+    .page-enter > * > :nth-child(2) { animation-delay: 40ms; }
+    .page-enter > * > :nth-child(3) { animation-delay: 80ms; }
+    .page-enter > * > :nth-child(4) { animation-delay: 120ms; }
+    .page-enter > * > :nth-child(n + 5) { animation-delay: 160ms; }
+    /* Un squelette d'attente ne bouge pas : seul le vrai contenu entre (règle à part : :has() absent des vieux navigateurs). */
+    .page-enter > * > :has(> .animate-pulse) {
+      animation: none;
+    }
+    @keyframes page-enter {
+      from {
+        opacity: 0.5;
+        transform: translateY(8px);
+      }
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
