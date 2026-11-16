@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { EngineError, resolveScore } from "@orgasport/engine";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { executeCommand } from "@/lib/tournament/execute";
-import { clientIp, rateLimit } from "@/lib/tournament/http";
+import { clientIp, rateLimit, refundRateLimit } from "@/lib/tournament/http";
 import { loadTournament } from "@/lib/tournament/load";
 import { teamCodeCookie } from "@/terrain/cookies";
 import { currentMatch, teamTimeline } from "@/terrain/view-model";
@@ -39,7 +39,16 @@ export async function POST(request: NextRequest, { params }: Ctx) {
   if (!team) return back("notPlayable");
   const typed = String(form.get("code") ?? "").trim() || request.cookies.get(teamCodeCookie(code, teamNumber))?.value || "";
   const secret = loaded.state.teamSecrets[team.id]?.code;
+  if (!typed) return back("badCode");
+  // Per targeted team, whatever the address: 10 wrong codes per 15 min. The
+  // attempt is reserved before the check (atomic, parallel requests included)
+  // and given back when the code is right, so only failures count. Past the
+  // cap even the right code is refused (otherwise guessing would go on); the
+  // captain is told to give the score to the scoring table, which always can.
+  const teamKey = `captain-team:${loaded.meta.id}:${team.id}`;
+  if (!(await rateLimit(teamKey, 10, 900))) return back("teamLocked");
   if (!secret || typed !== secret) return back("badCode");
+  await refundRateLimit(teamKey);
 
   const info = currentMatch(teamTimeline(loaded.state, team.id));
   if (!info || !["ready", "playing", "score_submitted", "disputed"].includes(info.match.status)) return back("notPlayable");

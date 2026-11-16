@@ -429,6 +429,7 @@ export const fr = {
       invalid: "Score impossible pour ce sport.",
       notPlayable: "Ce match ne peut pas recevoir de score maintenant.",
       limited: "Trop d'essais. Réessayez dans quelques minutes.",
+      teamLocked: "Trop de codes faux pour cette équipe : la saisie est bloquée 15 minutes au plus. Donnez votre score à la table de marque.",
       ended: "Le concours est terminé : la saisie des scores par les capitaines est fermée.",
       closed: "Lien clôturé : plus aucun score ne peut être saisi.",
     },

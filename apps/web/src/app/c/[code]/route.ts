@@ -72,7 +72,7 @@ export async function GET(request: NextRequest, { params }: Ctx) {
   const mineRaw = Number(mineCookie);
   const msgKey = sp.get("msg");
   const captain = getMessages().terrain.captain as Record<string, string>;
-  const ERRORS = new Set(["badCode", "invalid", "notPlayable", "limited", "ended", "closed"]);
+  const ERRORS = new Set(["badCode", "invalid", "notPlayable", "limited", "teamLocked", "ended", "closed"]);
   const message = msgKey && captain[msgKey] ? `${ERRORS.has(msgKey) ? "!" : ""}${captain[msgKey]}` : null;
 
   // « Enregistrer pour hors ligne »: the same page as a self-contained file (no script, CSS inlined).
